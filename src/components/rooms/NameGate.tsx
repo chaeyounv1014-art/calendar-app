@@ -40,9 +40,10 @@ export default function NameGate({
         </h2>
         <p className="text-xs text-slate-500">
           캘린더에 표시될 이름이에요. 친구들이 알아볼 수 있게{" "}
+          <strong className="font-bold text-slate-800">본명</strong>으로
+          적어주세요.{" "}
           <strong className="font-bold text-slate-800">
-            본명으로 적어주세요. 나중에 다시 들어와도 같은 이름이면 이어서
-            수정할 수 있어요.
+            나중에 다시 들어와도 같은 이름이면 이어서 수정할 수 있어요.
           </strong>
         </p>
       </div>
