@@ -33,7 +33,7 @@ export default function RoomView({
   if (!ready) {
     return (
       <div className="flex justify-center py-16">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/10 border-t-cyan-400" />
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-cyan-500" />
       </div>
     );
   }
@@ -53,13 +53,13 @@ export default function RoomView({
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
-          <h2 className="text-sm font-bold text-white/70">
+          <h2 className="text-sm font-bold text-slate-700">
             👥 참여자 ({entries.length}명)
           </h2>
           <button
             type="button"
             onClick={handleChangeName}
-            className="text-xs text-white/35 underline underline-offset-2 transition-colors hover:text-white/60"
+            className="text-xs text-slate-400 underline underline-offset-2 transition-colors hover:text-slate-600"
           >
             다른 이름으로 입력하기
           </button>
@@ -67,12 +67,12 @@ export default function RoomView({
         <ParticipantList entries={entries} />
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-indigo-950/40 backdrop-blur-xl">
+      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/60">
         <div className="flex flex-col gap-1">
-          <h2 className="text-base font-black text-white">
+          <h2 className="text-base font-black text-slate-900">
             ✏️ {name}님의 캘린더
           </h2>
-          <p className="text-xs text-white/50">
+          <p className="text-xs text-slate-500">
             날짜를 누를 때마다 ○ → △ → ✕ → 빈칸 순서로 바뀌어요. 다
             표시했으면 꼭 저장을 눌러주세요!
           </p>
@@ -88,14 +88,14 @@ export default function RoomView({
         />
       </section>
 
-      <section className="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-indigo-950/40 backdrop-blur-xl">
+      <section className="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/60">
         <div className="flex flex-col gap-1">
-          <h2 className="text-base font-black text-white">
+          <h2 className="text-base font-black text-slate-900">
             🎯 모두가 되는 날
           </h2>
-          <p className="text-xs text-white/50">
-            <span className="font-bold text-emerald-300">초록</span>은 전원
-            종일 가능, <span className="font-bold text-amber-300">노랑</span>은
+          <p className="text-xs text-slate-500">
+            <span className="font-bold text-emerald-600">초록</span>은 전원
+            종일 가능, <span className="font-bold text-amber-600">노랑</span>은
             일부 시간 가능인 사람이 섞여 있는 날이에요. 한 명이라도 ✕이거나
             아직 입력하지 않은 날은 표시되지 않아요.
           </p>

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 html,
@@ -13,8 +13,8 @@ body {
 }
 
 body {
-  background-color: #05050f;
-  color: #f5f5ff;
+  background-color: #f5f6fb;
+  color: #1e1b4b;
   font-family: var(--font-noto-sans-kr), "Malgun Gothic", sans-serif;
   min-height: 100dvh;
 }

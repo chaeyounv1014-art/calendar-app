@@ -16,12 +16,14 @@ export default function NewRoomPage() {
         <header className="flex flex-col gap-3">
           <Link
             href="/"
-            className="text-sm text-white/40 transition-colors hover:text-white/70"
+            className="text-sm text-slate-400 transition-colors hover:text-slate-700"
           >
             ← 홈으로
           </Link>
-          <h1 className="text-2xl font-black leading-tight">새 방 만들기</h1>
-          <p className="text-sm text-white/60">
+          <h1 className="text-2xl font-black leading-tight text-slate-900">
+            새 방 만들기
+          </h1>
+          <p className="text-sm text-slate-500">
             제목과 조율할 달만 정하면 바로 시작할 수 있어요.
           </p>
         </header>

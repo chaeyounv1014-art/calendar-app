@@ -74,15 +74,15 @@ export default async function RoomPage({ params }: RoomPageProps) {
         <header className="flex flex-col gap-3">
           <Link
             href="/"
-            className="text-sm text-white/40 transition-colors hover:text-white/70"
+            className="text-sm text-slate-400 transition-colors hover:text-slate-700"
           >
             ← 방 목록으로
           </Link>
           <div className="flex flex-col gap-2">
-            <span className="w-fit rounded-full bg-indigo-500/20 px-3 py-1 text-xs font-bold text-indigo-200">
+            <span className="w-fit rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
               📅 {formatMonthLabel(room.target_year, room.target_month)}
             </span>
-            <h1 className="text-balance text-2xl font-black leading-tight">
+            <h1 className="text-balance text-2xl font-black leading-tight text-slate-900">
               {room.title}
             </h1>
           </div>

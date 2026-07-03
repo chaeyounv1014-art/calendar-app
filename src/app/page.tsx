@@ -47,18 +47,18 @@ export default async function HomePage() {
 
       <div className="mx-auto flex w-full max-w-md flex-col gap-8">
         <header className="flex flex-col items-center gap-4 text-center">
-          <p className="text-sm font-black tracking-widest text-cyan-300">
+          <p className="text-sm font-black tracking-widest text-cyan-600">
             📅 언제볼까?
           </p>
           <Badge>✅ 로그인 없이 바로 시작</Badge>
-          <h1 className="animate-fade-in-up text-balance text-3xl font-black leading-tight tracking-tight">
+          <h1 className="animate-fade-in-up text-balance text-3xl font-black leading-tight tracking-tight text-slate-900">
             우리 모임,{" "}
-            <span className="bg-gradient-to-r from-indigo-400 via-cyan-400 to-teal-300 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-indigo-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
               모두가 되는 날
             </span>
             은 언제일까?
           </h1>
-          <p className="animate-fade-in-up text-balance text-sm text-white/60">
+          <p className="animate-fade-in-up text-balance text-sm text-slate-500">
             각자 가능한 날에 O·세모·X만 표시하면, 겹치는 날짜를 캘린더로
             한눈에 보여드려요.
           </p>
@@ -66,23 +66,23 @@ export default async function HomePage() {
 
         <Link
           href="/rooms/new"
-          className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 bg-size-200 bg-[position:0%_50%] px-8 py-4 text-base font-bold text-white shadow-xl shadow-indigo-900/50 transition-all duration-300 hover:scale-105 hover:bg-[position:100%_50%] active:scale-95"
+          className="group inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 bg-size-200 bg-[position:0%_50%] px-8 py-4 text-base font-bold text-white shadow-lg shadow-indigo-300/60 transition-all duration-300 hover:scale-105 hover:bg-[position:100%_50%] active:scale-95"
         >
           ＋ 새 방 만들기
         </Link>
 
         <section className="flex flex-col gap-3">
-          <h2 className="px-1 text-sm font-bold text-white/70">
+          <h2 className="px-1 text-sm font-bold text-slate-700">
             📂 열려있는 방 ({rooms.length})
           </h2>
 
           {rooms.length === 0 ? (
-            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-10 text-center">
-              <p className="text-3xl">🌙</p>
-              <p className="text-sm font-semibold text-white/60">
+            <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-slate-300 bg-white/60 px-6 py-10 text-center">
+              <p className="text-3xl">🗓️</p>
+              <p className="text-sm font-semibold text-slate-500">
                 아직 만들어진 방이 없어요
               </p>
-              <p className="text-xs text-white/40">
+              <p className="text-xs text-slate-400">
                 첫 번째 방을 만들고 친구들에게 공유해보세요!
               </p>
             </div>

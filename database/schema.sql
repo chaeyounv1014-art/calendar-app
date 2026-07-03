@@ -104,3 +104,11 @@ create policy "Allow anonymous update entries"
   to anon
   using (true)
   with check (true);
+
+-- 참여자 삭제 허용 (유령/오타 참여자가 결과 캘린더를 막는 문제 해결용)
+drop policy if exists "Allow anonymous delete entries" on public.schedule_entries;
+create policy "Allow anonymous delete entries"
+  on public.schedule_entries
+  for delete
+  to anon
+  using (true);

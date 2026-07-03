@@ -6,21 +6,21 @@ export default function RoomCard({ room }: { room: RoomWithCount }) {
   return (
     <Link
       href={`/rooms/${room.id}`}
-      className="group flex flex-col gap-3 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-xl shadow-indigo-950/30 backdrop-blur-xl transition-all duration-200 hover:scale-[1.02] hover:border-cyan-400/40 hover:bg-cyan-400/5 active:scale-[0.99]"
+      className="group flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-slate-200/60 transition-all duration-200 hover:scale-[1.02] hover:border-cyan-300 hover:shadow-cyan-100 active:scale-[0.99]"
     >
       <div className="flex items-start justify-between gap-3">
-        <h2 className="text-base font-bold leading-snug text-white group-hover:text-cyan-200">
+        <h2 className="text-base font-bold leading-snug text-slate-900 group-hover:text-indigo-600">
           {room.title}
         </h2>
-        <span className="shrink-0 text-white/30 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-cyan-300">
+        <span className="shrink-0 text-slate-300 transition-transform duration-200 group-hover:translate-x-1 group-hover:text-cyan-500">
           ➔
         </span>
       </div>
-      <div className="flex items-center gap-2 text-xs text-white/50">
-        <span className="rounded-full bg-indigo-500/20 px-2.5 py-1 font-semibold text-indigo-200">
+      <div className="flex items-center gap-2 text-xs">
+        <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-600">
           📅 {formatMonthLabel(room.target_year, room.target_month)}
         </span>
-        <span className="rounded-full bg-white/5 px-2.5 py-1 font-semibold">
+        <span className="rounded-full bg-slate-100 px-2.5 py-1 font-semibold text-slate-500">
           👥 {room.participant_count}명 참여
         </span>
       </div>

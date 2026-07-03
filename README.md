@@ -30,7 +30,8 @@ Supabase 대시보드 → **SQL Editor** 에서 [database/schema.sql](database/s
 - `schedule_rooms`: 방(제목 + 조율 대상 연/월)
 - `schedule_entries`: 참여자별 월간 가능 여부(jsonb), `(room_id, participant_name)`
   unique 제약으로 "같은 이름 재저장 = 본인 입력 덮어쓰기" 구현
-- RLS 정책: 익명 사용자에게 방 조회/생성, 응답 조회/생성/수정 허용
+- RLS 정책: 익명 사용자에게 방 조회/생성, 응답 조회/생성/수정/삭제 허용
+  (참여자 칩의 ✕ 버튼으로 유령/오타 참여자를 정리할 수 있음)
 
 기존 `mbti_results` 테이블과는 완전히 독립적이며 서로 영향을 주지 않습니다.
 

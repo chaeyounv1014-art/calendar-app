@@ -17,10 +17,10 @@ export default function MergedCalendar({
             key={label}
             className={`py-1 text-center text-[11px] font-bold ${
               i === 0
-                ? "text-rose-300/70"
+                ? "text-rose-400"
                 : i === 6
-                  ? "text-cyan-300/70"
-                  : "text-white/40"
+                  ? "text-cyan-500"
+                  : "text-slate-400"
             }`}
           >
             {label}
