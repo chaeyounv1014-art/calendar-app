@@ -23,14 +23,21 @@ export default function ParticipantList({
 
     setDeletingId(entry.id);
 
-    const { error } = await supabase
+    const { data, error } = await supabase
       .from(ENTRIES_TABLE)
       .delete()
-      .eq("id", entry.id);
+      .eq("id", entry.id)
+      .select();
 
-    if (error) {
-      console.error("[room] failed to delete entry:", error.message);
-      window.alert("삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+    if (error || !data || data.length === 0) {
+      // RLS 정책이 없으면 에러 없이 0건 삭제로 끝나므로 함께 잡아준다
+      console.error(
+        "[room] failed to delete entry:",
+        error?.message ?? "no rows deleted (RLS delete policy missing?)"
+      );
+      window.alert(
+        "삭제에 실패했어요. Supabase에 delete 정책이 실행되어 있는지 확인해주세요."
+      );
       setDeletingId(null);
       return;
     }
