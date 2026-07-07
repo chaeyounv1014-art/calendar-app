@@ -2,7 +2,8 @@
 
 import { useRef } from "react";
 
-// 24시간 원형 다이얼: 0시가 맨 위, 시계 방향으로 1시간 = 15도
+// 24시간 원형 다이얼: 낮 12시가 맨 위, 0시(자정)가 맨 아래,
+// 시계 방향으로 1시간 = 15도 (낮 시간대가 위쪽에 오도록 180도 회전)
 const VIEW = 260;
 const CX = 130;
 const CY = 130;
@@ -10,6 +11,11 @@ const R_OUT = 100;
 const R_IN = 64;
 const LABEL_R = 114;
 const LABEL_HOURS = [0, 3, 6, 9, 12, 15, 18, 21];
+const ROTATE = 180; // 0시를 아래로 보내는 회전 각도
+
+function hourStartAngle(hour: number): number {
+  return hour * 15 + ROTATE;
+}
 
 function point(r: number, deg: number): [number, number] {
   const rad = ((deg - 90) * Math.PI) / 180;
@@ -18,8 +24,8 @@ function point(r: number, deg: number): [number, number] {
 
 function segmentPath(hour: number): string {
   const pad = 0.8; // 세그먼트 사이 살짝 틈
-  const a0 = hour * 15 + pad;
-  const a1 = (hour + 1) * 15 - pad;
+  const a0 = hourStartAngle(hour) + pad;
+  const a1 = hourStartAngle(hour + 1) - pad;
   const [x0o, y0o] = point(R_OUT, a0);
   const [x1o, y1o] = point(R_OUT, a1);
   const [x1i, y1i] = point(R_IN, a1);
@@ -37,7 +43,7 @@ function HourLabels() {
   return (
     <>
       {LABEL_HOURS.map((h) => {
-        const [x, y] = point(LABEL_R, h * 15);
+        const [x, y] = point(LABEL_R, hourStartAngle(h));
         return (
           <text
             key={h}
@@ -79,9 +85,10 @@ export function ClockDialInput({
     const x = ((clientX - rect.left) / rect.width) * VIEW - CX;
     const y = ((clientY - rect.top) / rect.height) * VIEW - CY;
     const deg = (Math.atan2(y, x) * 180) / Math.PI;
-    const clockDeg = (deg + 90 + 360) % 360; // 0도 = 12시(0시) 방향
+    const clockDeg = (deg + 90 + 360) % 360; // 0도 = 맨 위
+    const dialDeg = (clockDeg - ROTATE + 360) % 360; // 회전 보정
     return {
-      hour: Math.floor(clockDeg / 15) % 24,
+      hour: Math.floor(dialDeg / 15) % 24,
       radius: Math.hypot(x, y),
     };
   };
