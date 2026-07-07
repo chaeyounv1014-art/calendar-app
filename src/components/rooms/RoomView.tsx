@@ -123,23 +123,24 @@ export default function RoomView({
           selectedDay={selectedDay}
           onSelectDay={handleSelectDay}
         />
-        {selectedDay !== null && selectedResult?.included && (
-          <TimeVotePanel
-            key={selectedDay}
-            roomId={room.id}
-            month={room.target_month}
-            day={selectedDay}
-            participantName={name}
-            dayParticipants={dayParticipants}
-            votes={timeVotes.filter(
-              (v) =>
-                v.day === selectedDay &&
-                dayParticipants.includes(v.participant_name)
-            )}
-            onClose={() => setSelectedDay(null)}
-          />
-        )}
       </section>
+
+      {selectedDay !== null && selectedResult?.included && (
+        <TimeVotePanel
+          key={selectedDay}
+          roomId={room.id}
+          month={room.target_month}
+          day={selectedDay}
+          participantName={name}
+          dayParticipants={dayParticipants}
+          votes={timeVotes.filter(
+            (v) =>
+              v.day === selectedDay &&
+              dayParticipants.includes(v.participant_name)
+          )}
+          onClose={() => setSelectedDay(null)}
+        />
+      )}
     </div>
   );
 }

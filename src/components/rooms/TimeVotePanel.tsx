@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TimeSlotKey, TimeVoteRow } from "@/types/schedule";
 import { TIME_SLOTS, summarizeSlotVotes } from "@/lib/schedule/timeSlots";
@@ -24,6 +24,13 @@ export default function TimeVotePanel({
   onClose: () => void;
 }) {
   const router = useRouter();
+  const panelRef = useRef<HTMLDivElement | null>(null);
+
+  // 날짜를 고르면 이 카드가 바로 보이도록 스크롤
+  useEffect(() => {
+    panelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, []);
+
   const myVote = votes.find((v) => v.participant_name === participantName);
   const [mySlots, setMySlots] = useState<TimeSlotKey[]>(
     myVote && Array.isArray(myVote.slots) ? myVote.slots : []
@@ -76,12 +83,21 @@ export default function TimeVotePanel({
   const total = dayParticipants.length;
 
   return (
-    <div className="flex flex-col gap-4 rounded-xl border border-indigo-200 bg-indigo-50/60 p-4">
+    <section
+      ref={panelRef}
+      className="flex flex-col gap-5 rounded-2xl border-2 border-indigo-300 bg-white p-5 shadow-xl shadow-indigo-200/60"
+    >
       <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-0.5">
-          <h3 className="text-sm font-black text-slate-900">
-            ⏰ {month}월 {day}일, 몇 시에 볼까요?
-          </h3>
+        <div className="flex flex-col gap-2">
+          <span className="w-fit rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
+            ⏰ 시간 정하기
+          </span>
+          <h2 className="text-2xl font-black leading-tight text-slate-900">
+            {month}월 {day}일
+          </h2>
+          <p className="text-sm font-semibold text-slate-600">
+            이 날 몇 시에 볼까요?
+          </p>
           <p className="text-[11px] text-slate-500">
             이 날 되는 사람: {dayParticipants.join(", ")}
           </p>
@@ -90,7 +106,7 @@ export default function TimeVotePanel({
           type="button"
           onClick={onClose}
           aria-label="시간 정하기 닫기"
-          className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-slate-400 transition-colors hover:bg-white hover:text-slate-600"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
         >
           ✕
         </button>
@@ -184,6 +200,6 @@ export default function TimeVotePanel({
           </p>
         )}
       </div>
-    </div>
+    </section>
   );
 }
