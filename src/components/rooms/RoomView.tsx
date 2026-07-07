@@ -14,6 +14,7 @@ import MergedCalendar from "./MergedCalendar";
 import ParticipantList from "./ParticipantList";
 import StatusLegend from "./StatusLegend";
 import TimeVotePanel from "./TimeVotePanel";
+import PlaceFinder from "./PlaceFinder";
 
 export default function RoomView({
   room,
@@ -126,20 +127,23 @@ export default function RoomView({
       </section>
 
       {selectedDay !== null && selectedResult?.included && (
-        <TimeVotePanel
-          key={selectedDay}
-          roomId={room.id}
-          month={room.target_month}
-          day={selectedDay}
-          participantName={name}
-          dayParticipants={dayParticipants}
-          votes={timeVotes.filter(
-            (v) =>
-              v.day === selectedDay &&
-              dayParticipants.includes(v.participant_name)
-          )}
-          onClose={() => setSelectedDay(null)}
-        />
+        <>
+          <TimeVotePanel
+            key={selectedDay}
+            roomId={room.id}
+            month={room.target_month}
+            day={selectedDay}
+            participantName={name}
+            dayParticipants={dayParticipants}
+            votes={timeVotes.filter(
+              (v) =>
+                v.day === selectedDay &&
+                dayParticipants.includes(v.participant_name)
+            )}
+            onClose={() => setSelectedDay(null)}
+          />
+          <PlaceFinder />
+        </>
       )}
     </div>
   );
