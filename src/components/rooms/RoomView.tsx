@@ -5,6 +5,7 @@ import type {
   MergedMonthResult,
   ScheduleEntryRow,
   ScheduleRoomRow,
+  TimeVoteRow,
 } from "@/types/schedule";
 import { getStoredName, clearStoredName } from "@/lib/schedule/storage";
 import NameGate from "./NameGate";
@@ -12,18 +13,22 @@ import MonthCalendarInput from "./MonthCalendarInput";
 import MergedCalendar from "./MergedCalendar";
 import ParticipantList from "./ParticipantList";
 import StatusLegend from "./StatusLegend";
+import TimeVotePanel from "./TimeVotePanel";
 
 export default function RoomView({
   room,
   entries,
   merged,
+  timeVotes,
 }: {
   room: ScheduleRoomRow;
   entries: ScheduleEntryRow[];
   merged: MergedMonthResult;
+  timeVotes: TimeVoteRow[];
 }) {
   const [name, setName] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   useEffect(() => {
     setName(getStoredName(room.id));
@@ -48,6 +53,16 @@ export default function RoomView({
     clearStoredName(room.id);
     setName(null);
   };
+
+  const handleSelectDay = (day: number) => {
+    setSelectedDay((prev) => (prev === day ? null : day));
+  };
+
+  const selectedResult =
+    selectedDay !== null ? merged.days[selectedDay] : undefined;
+  const dayParticipants = selectedResult?.included
+    ? selectedResult.groups.flatMap((g) => g.names)
+    : [];
 
   return (
     <div className="flex flex-col gap-8">
@@ -97,10 +112,33 @@ export default function RoomView({
             <span className="font-bold text-emerald-600">초록</span>은 전원
             종일 가능, <span className="font-bold text-amber-600">노랑</span>은
             일부 시간 가능인 사람이 섞여 있는 날이에요. 한 명이라도 ✕이거나
-            아직 입력하지 않은 날은 표시되지 않아요.
+            아직 입력하지 않은 날은 표시되지 않아요.{" "}
+            <strong className="font-bold text-indigo-600">
+              색칠된 칸을 누르면 그 날 몇 시에 볼지도 정할 수 있어요!
+            </strong>
           </p>
         </div>
-        <MergedCalendar merged={merged} />
+        <MergedCalendar
+          merged={merged}
+          selectedDay={selectedDay}
+          onSelectDay={handleSelectDay}
+        />
+        {selectedDay !== null && selectedResult?.included && (
+          <TimeVotePanel
+            key={selectedDay}
+            roomId={room.id}
+            month={room.target_month}
+            day={selectedDay}
+            participantName={name}
+            dayParticipants={dayParticipants}
+            votes={timeVotes.filter(
+              (v) =>
+                v.day === selectedDay &&
+                dayParticipants.includes(v.participant_name)
+            )}
+            onClose={() => setSelectedDay(null)}
+          />
+        )}
       </section>
     </div>
   );

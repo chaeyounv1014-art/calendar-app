@@ -16,3 +16,4 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 
 export const ROOMS_TABLE = "schedule_rooms";
 export const ENTRIES_TABLE = "schedule_entries";
+export const TIME_VOTES_TABLE = "schedule_time_votes";

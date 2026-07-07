@@ -47,9 +47,13 @@ export function InputDayCell({
 export function MergedDayCell({
   day,
   result,
+  selected,
+  onSelect,
 }: {
   day: number | null;
   result?: MergedDayResult;
+  selected?: boolean;
+  onSelect?: () => void;
 }) {
   if (day === null) {
     return <div className="min-h-14" aria-hidden />;
@@ -70,8 +74,15 @@ export function MergedDayCell({
   const textClass = isAllFull ? "text-emerald-700" : "text-amber-700";
 
   return (
-    <div
-      className={`flex min-h-14 flex-col gap-0.5 rounded-lg p-1.5 ${cellClass}`}
+    <button
+      type="button"
+      onClick={onSelect}
+      aria-label={`${day}일 시간 정하기`}
+      className={`flex min-h-14 w-full flex-col gap-0.5 rounded-lg p-1.5 text-left transition-all duration-150 active:scale-95 ${cellClass} ${
+        selected
+          ? "ring-2 ring-indigo-500 ring-offset-1"
+          : "hover:ring-2 hover:ring-indigo-300"
+      }`}
     >
       <span className="text-[10px] leading-none text-slate-500">{day}</span>
       {result.groups.map((group) => (
@@ -83,6 +94,6 @@ export function MergedDayCell({
           <span className="break-all">{group.names.join(" ")}</span>
         </span>
       ))}
-    </div>
+    </button>
   );
 }

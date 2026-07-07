@@ -112,3 +112,54 @@ create policy "Allow anonymous delete entries"
   for delete
   to anon
   using (true);
+
+-- ============================================================
+-- 시간대 투표: "되는 날"을 골라 몇 시에 볼지 정한다
+-- slots 예시: ["morning","evening"] (아침/점심/오후/저녁/밤 중 선택)
+-- ============================================================
+
+create table if not exists public.schedule_time_votes (
+  id uuid primary key default gen_random_uuid(),
+  room_id uuid not null references public.schedule_rooms(id) on delete cascade,
+  day integer not null check (day between 1 and 31),
+  participant_name text not null check (char_length(trim(participant_name)) between 1 and 20),
+  slots jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now(),
+  constraint schedule_time_votes_unique unique (room_id, day, participant_name)
+);
+
+comment on table public.schedule_time_votes is '되는 날 하루에 대한 참여자별 가능 시간대 투표';
+comment on column public.schedule_time_votes.slots is '["morning","lunch","afternoon","evening","night"] 중 가능한 시간대 배열';
+
+create index if not exists schedule_time_votes_room_id_idx
+  on public.schedule_time_votes (room_id);
+
+drop trigger if exists schedule_time_votes_set_updated_at_trigger on public.schedule_time_votes;
+create trigger schedule_time_votes_set_updated_at_trigger
+  before update on public.schedule_time_votes
+  for each row
+  execute function public.schedule_entries_set_updated_at();
+
+alter table public.schedule_time_votes enable row level security;
+
+drop policy if exists "Allow anonymous select time votes" on public.schedule_time_votes;
+create policy "Allow anonymous select time votes"
+  on public.schedule_time_votes
+  for select
+  to anon
+  using (true);
+
+drop policy if exists "Allow anonymous insert time votes" on public.schedule_time_votes;
+create policy "Allow anonymous insert time votes"
+  on public.schedule_time_votes
+  for insert
+  to anon
+  with check (true);
+
+drop policy if exists "Allow anonymous update time votes" on public.schedule_time_votes;
+create policy "Allow anonymous update time votes"
+  on public.schedule_time_votes
+  for update
+  to anon
+  using (true)
+  with check (true);

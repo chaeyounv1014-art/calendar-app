@@ -45,3 +45,20 @@ export interface MergedMonthResult {
   days: Record<number, MergedDayResult>;
   participantCount: number;
 }
+
+// 하루를 5개 시간대로 나눠, 되는 날의 "몇 시에 볼지"를 투표한다
+export type TimeSlotKey =
+  | "morning"
+  | "lunch"
+  | "afternoon"
+  | "evening"
+  | "night";
+
+export interface TimeVoteRow {
+  id: string;
+  room_id: string;
+  day: number;
+  participant_name: string;
+  slots: TimeSlotKey[];
+  updated_at: string;
+}

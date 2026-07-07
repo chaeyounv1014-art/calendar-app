@@ -3,10 +3,20 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import GradientBackdrop from "@/components/ui/GradientBackdrop";
 import RoomView from "@/components/rooms/RoomView";
-import { supabase, ROOMS_TABLE, ENTRIES_TABLE } from "@/lib/supabase";
+import ShareButton from "@/components/rooms/ShareButton";
+import {
+  supabase,
+  ROOMS_TABLE,
+  ENTRIES_TABLE,
+  TIME_VOTES_TABLE,
+} from "@/lib/supabase";
 import { mergeMonthEntries } from "@/lib/schedule/merge";
 import { formatMonthLabel } from "@/lib/schedule/month";
-import type { ScheduleEntryRow, ScheduleRoomRow } from "@/types/schedule";
+import type {
+  ScheduleEntryRow,
+  ScheduleRoomRow,
+  TimeVoteRow,
+} from "@/types/schedule";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -43,6 +53,20 @@ async function getEntries(roomId: string): Promise<ScheduleEntryRow[]> {
   return (data ?? []) as ScheduleEntryRow[];
 }
 
+async function getTimeVotes(roomId: string): Promise<TimeVoteRow[]> {
+  const { data, error } = await supabase
+    .from(TIME_VOTES_TABLE)
+    .select("*")
+    .eq("room_id", roomId)
+    .order("updated_at", { ascending: true });
+
+  if (error) {
+    console.error("[room] failed to fetch time votes:", error.message);
+    return [];
+  }
+  return (data ?? []) as TimeVoteRow[];
+}
+
 export async function generateMetadata({
   params,
 }: RoomPageProps): Promise<Metadata> {
@@ -64,6 +88,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
   }
 
   const entries = await getEntries(room.id);
+  const timeVotes = await getTimeVotes(room.id);
   const merged = mergeMonthEntries(entries, room.target_year, room.target_month);
 
   return (
@@ -85,10 +110,19 @@ export default async function RoomPage({ params }: RoomPageProps) {
             <h1 className="text-balance text-2xl font-black leading-tight text-slate-900">
               {room.title}
             </h1>
+            <ShareButton
+              title={room.title}
+              monthLabel={formatMonthLabel(room.target_year, room.target_month)}
+            />
           </div>
         </header>
 
-        <RoomView room={room} entries={entries} merged={merged} />
+        <RoomView
+          room={room}
+          entries={entries}
+          merged={merged}
+          timeVotes={timeVotes}
+        />
       </div>
     </main>
   );
