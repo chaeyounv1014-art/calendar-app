@@ -11,6 +11,53 @@ const CATEGORIES = [
 
 type CategoryKey = (typeof CATEGORIES)[number]["key"];
 
+// 카카오는 가게 사진을 제공하지 않으므로, 카테고리에 어울리는
+// 이모지 썸네일로 사진 자리를 채운다
+const EMOJI_RULES: Array<[string[], string]> = [
+  [["갈비", "고기", "육류", "삼겹", "곱창"], "🥩"],
+  [["국수", "냉면", "칼국수", "라면", "우동"], "🍜"],
+  [["중국", "중식"], "🥟"],
+  [["일식", "초밥", "돈까스", "돈가스"], "🍣"],
+  [["회", "해물", "수산", "조개"], "🐟"],
+  [["치킨"], "🍗"],
+  [["피자"], "🍕"],
+  [["버거"], "🍔"],
+  [["분식", "떡볶이"], "🍢"],
+  [["빵", "제과", "베이커리", "도넛"], "🥐"],
+  [["디저트", "케이크", "아이스크림", "빙수"], "🍰"],
+  [["카페", "커피"], "☕"],
+  [["술", "호프", "포차", "주점", "와인", "맥주"], "🍺"],
+  [["노래"], "🎤"],
+  [["볼링"], "🎳"],
+  [["영화"], "🎬"],
+  [["보드", "게임", "오락"], "🎲"],
+  [["방탈출"], "🗝️"],
+  [["공원"], "🌳"],
+  [["전시", "미술", "박물관"], "🖼️"],
+  [["탕", "국밥", "찌개", "한식", "백반", "정식", "뷔페"], "🍚"],
+];
+
+const DEFAULT_EMOJI: Record<CategoryKey, string> = {
+  food: "🍽️",
+  cafe: "☕",
+  play: "🎪",
+};
+
+function placeEmoji(categoryText: string, fallback: CategoryKey): string {
+  for (const [keywords, emoji] of EMOJI_RULES) {
+    if (keywords.some((k) => categoryText.includes(k))) return emoji;
+  }
+  return DEFAULT_EMOJI[fallback];
+}
+
+// 썸네일 배경을 번갈아 써서 사진첩 느낌을 낸다
+const THUMB_BG = [
+  "bg-gradient-to-br from-rose-100 to-amber-100",
+  "bg-gradient-to-br from-sky-100 to-indigo-100",
+  "bg-gradient-to-br from-emerald-100 to-teal-100",
+  "bg-gradient-to-br from-violet-100 to-fuchsia-100",
+];
+
 export default function PlaceFinder() {
   const [area, setArea] = useState("");
   const [category, setCategory] = useState<CategoryKey>("food");
@@ -123,29 +170,33 @@ export default function PlaceFinder() {
       )}
 
       {places !== null && places.length > 0 && (
-        <ul className="flex flex-col gap-2">
-          {places.map((p) => (
+        <ul className="grid grid-cols-2 gap-3">
+          {places.map((p, i) => (
             <li key={p.id}>
               <a
                 href={p.url}
                 target="_blank"
                 rel="noreferrer"
-                className="flex flex-col gap-1 rounded-xl border border-slate-200 bg-white p-3.5 transition-all duration-150 hover:border-cyan-300 hover:shadow-md hover:shadow-cyan-100 active:scale-[0.99]"
+                className="flex h-full flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition-all duration-150 hover:border-cyan-300 hover:shadow-md hover:shadow-cyan-100 active:scale-[0.98]"
               >
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-sm font-bold text-slate-800">
+                <div
+                  className={`flex h-20 items-center justify-center text-4xl ${THUMB_BG[i % THUMB_BG.length]}`}
+                >
+                  {placeEmoji(p.category, category)}
+                </div>
+                <div className="flex flex-col gap-1 p-3">
+                  <span className="line-clamp-1 text-[13px] font-bold text-slate-800">
                     {p.name}
                   </span>
                   {p.category && (
-                    <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-500">
+                    <span className="w-fit rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-500">
                       {p.category}
                     </span>
                   )}
+                  <p className="line-clamp-2 text-[10px] leading-snug text-slate-500">
+                    {p.address}
+                  </p>
                 </div>
-                <p className="text-[11px] text-slate-500">{p.address}</p>
-                {p.phone && (
-                  <p className="text-[11px] text-slate-400">{p.phone}</p>
-                )}
               </a>
             </li>
           ))}
