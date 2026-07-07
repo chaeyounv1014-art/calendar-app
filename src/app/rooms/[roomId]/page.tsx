@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import GradientBackdrop from "@/components/ui/GradientBackdrop";
 import RoomView from "@/components/rooms/RoomView";
 import ShareButton from "@/components/rooms/ShareButton";
+import PlaceFinder from "@/components/rooms/PlaceFinder";
 import {
   supabase,
   ROOMS_TABLE,
@@ -128,6 +129,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
           merged={merged}
           timeVotes={timeVotes}
         />
+
+        <PlaceFinder />
       </div>
     </main>
   );
