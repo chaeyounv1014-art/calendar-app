@@ -107,13 +107,18 @@ export default async function RoomPage({ params }: RoomPageProps) {
             <span className="w-fit rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
               📅 {formatMonthLabel(room.target_year, room.target_month)}
             </span>
-            <h1 className="text-balance text-2xl font-black leading-tight text-slate-900">
-              {room.title}
-            </h1>
-            <ShareButton
-              title={room.title}
-              monthLabel={formatMonthLabel(room.target_year, room.target_month)}
-            />
+            <div className="flex items-start justify-between gap-3">
+              <h1 className="text-balance text-2xl font-black leading-tight text-slate-900">
+                {room.title}
+              </h1>
+              <ShareButton
+                title={room.title}
+                monthLabel={formatMonthLabel(
+                  room.target_year,
+                  room.target_month
+                )}
+              />
+            </div>
           </div>
         </header>
 

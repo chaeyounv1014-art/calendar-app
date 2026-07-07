@@ -39,9 +39,9 @@ export default function ShareButton({
     <button
       type="button"
       onClick={handleShare}
-      className="inline-flex w-fit items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-4 py-2 text-xs font-bold text-indigo-600 shadow-sm transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50 active:scale-95"
+      className="mt-1 inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-xs font-bold text-indigo-600 shadow-sm transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50 active:scale-95"
     >
-      {copied ? "✅ 복사 완료! 카톡에 붙여넣으세요" : "🔗 재촉 링크 보내기"}
+      {copied ? "✅ 복사 완료!" : "📣 아직 안한사람 부르기"}
     </button>
   );
 }
