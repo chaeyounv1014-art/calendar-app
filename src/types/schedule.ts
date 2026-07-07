@@ -46,19 +46,13 @@ export interface MergedMonthResult {
   participantCount: number;
 }
 
-// 하루를 5개 시간대로 나눠, 되는 날의 "몇 시에 볼지"를 투표한다
-export type TimeSlotKey =
-  | "morning"
-  | "lunch"
-  | "afternoon"
-  | "evening"
-  | "night";
-
+// 되는 날 하루에 대해 "몇 시에 볼지"를 시계 드래그로 정한다.
+// slots에는 가능한 시(0~23)를 문자열로 저장한다. 예: ["11","12","13"]
 export interface TimeVoteRow {
   id: string;
   room_id: string;
   day: number;
   participant_name: string;
-  slots: TimeSlotKey[];
+  slots: string[];
   updated_at: string;
 }

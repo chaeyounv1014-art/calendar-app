@@ -114,8 +114,8 @@ create policy "Allow anonymous delete entries"
   using (true);
 
 -- ============================================================
--- 시간대 투표: "되는 날"을 골라 몇 시에 볼지 정한다
--- slots 예시: ["morning","evening"] (아침/점심/오후/저녁/밤 중 선택)
+-- 시간 투표: "되는 날"을 골라 몇 시에 볼지 정한다 (시계 드래그)
+-- slots 예시: ["11","12","13"] (가능한 시각 0~23을 문자열로)
 -- ============================================================
 
 create table if not exists public.schedule_time_votes (
@@ -129,7 +129,7 @@ create table if not exists public.schedule_time_votes (
 );
 
 comment on table public.schedule_time_votes is '되는 날 하루에 대한 참여자별 가능 시간대 투표';
-comment on column public.schedule_time_votes.slots is '["morning","lunch","afternoon","evening","night"] 중 가능한 시간대 배열';
+comment on column public.schedule_time_votes.slots is '가능한 시(hour, 0~23)의 문자열 배열. 예: ["11","12","13"]';
 
 create index if not exists schedule_time_votes_room_id_idx
   on public.schedule_time_votes (room_id);
