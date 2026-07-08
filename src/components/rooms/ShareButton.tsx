@@ -41,7 +41,7 @@ export default function ShareButton({
       onClick={handleShare}
       className="mt-1 inline-flex w-fit shrink-0 items-center gap-1.5 rounded-full border border-indigo-200 bg-white px-3.5 py-2 text-xs font-bold text-indigo-600 shadow-sm transition-all duration-150 hover:border-indigo-400 hover:bg-indigo-50 active:scale-95"
     >
-      {copied ? "✅ 복사 완료!" : "📣 아직 안한사람 부르기"}
+      {copied ? "✅ 링크 복사 완료, 친구에게 보내주세요" : "📣 아직 안한사람 부르기"}
     </button>
   );
 }
