@@ -128,7 +128,7 @@ export default function PlaceFinder() {
           value={area}
           onChange={(e) => setArea(e.target.value)}
           maxLength={30}
-          placeholder="예: 홍대, 서울역, 명동, 경희대"
+          placeholder="예: 성수, 홍대"
           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
         />
         <button
