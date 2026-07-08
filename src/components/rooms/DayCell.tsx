@@ -88,10 +88,16 @@ export function MergedDayCell({
       {result.groups.map((group) => (
         <span
           key={group.state}
-          className={`flex items-center gap-0.5 text-[9px] font-bold leading-tight ${textClass}`}
+          className={`flex items-start gap-0.5 text-[9px] font-bold leading-tight ${textClass}`}
         >
           <span className="shrink-0">{STATE_ICON[group.state]}</span>
-          <span className="break-all">{group.names.join(" ")}</span>
+          <span className="flex min-w-0 flex-col">
+            {group.names.map((n) => (
+              <span key={n} className="break-all">
+                {n}
+              </span>
+            ))}
+          </span>
         </span>
       ))}
     </button>
