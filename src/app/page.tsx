@@ -51,8 +51,9 @@ export default async function HomePage() {
             📅 언제볼까?
           </p>
           <Badge>✅ 로그인 없이 바로 시작</Badge>
-          <h1 className="animate-fade-in-up text-balance text-3xl font-black leading-tight tracking-tight text-slate-900">
-            우리 모임,{" "}
+          <h1 className="animate-fade-in-up break-keep text-3xl font-black leading-tight tracking-tight text-slate-900">
+            우리 모임,
+            <br />
             <span className="bg-gradient-to-r from-indigo-600 via-cyan-500 to-teal-500 bg-clip-text text-transparent">
               모두가 되는 날
             </span>
