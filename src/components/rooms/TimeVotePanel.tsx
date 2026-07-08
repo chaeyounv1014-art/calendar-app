@@ -8,8 +8,9 @@ import {
   hoursToRangeText,
   buildHourCounts,
   allAvailableHours,
+  formatHour,
 } from "@/lib/schedule/timeSlots";
-import { supabase, TIME_VOTES_TABLE } from "@/lib/supabase";
+import { supabase, TIME_VOTES_TABLE, ROOMS_TABLE } from "@/lib/supabase";
 import { ClockDialInput, ClockDialResult } from "./ClockDial";
 
 export default function TimeVotePanel({
@@ -44,6 +45,11 @@ export default function TimeVotePanel({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
+  const [confirmHour, setConfirmHour] = useState<number>(() => {
+    const hours = allAvailableHours(votes, dayParticipants);
+    return hours.length > 0 ? hours[0] : 12;
+  });
 
   const handleHoursChange = (hours: number[]) => {
     setSaved(false);
@@ -74,6 +80,37 @@ export default function TimeVotePanel({
 
     setSaving(false);
     setSaved(true);
+    router.refresh();
+  };
+
+  const handleConfirm = async () => {
+    if (confirming) return;
+    const ok = window.confirm(
+      `${month}월 ${day}일 ${formatHour(confirmHour)} 약속으로 확정할까요?`
+    );
+    if (!ok) return;
+
+    setConfirming(true);
+    const { data, error } = await supabase
+      .from(ROOMS_TABLE)
+      .update({ confirmed_day: day, confirmed_hour: confirmHour })
+      .eq("id", roomId)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      console.error(
+        "[room] failed to confirm:",
+        error?.message ?? "no rows updated (RLS update policy missing?)"
+      );
+      window.alert(
+        "확정에 실패했어요. Supabase에 update 정책이 실행되어 있는지 확인해주세요."
+      );
+      setConfirming(false);
+      return;
+    }
+
+    setConfirming(false);
+    onClose();
     router.refresh();
   };
 
@@ -199,6 +236,36 @@ export default function TimeVotePanel({
             </p>
           )}
         </div>
+      </div>
+
+      <div className="flex flex-col gap-3 border-t border-slate-100 pt-5">
+        <p className="text-xs font-bold text-slate-700">
+          📌 이 날로 약속 확정하기
+        </p>
+        <div className="flex gap-2">
+          <select
+            value={confirmHour}
+            onChange={(e) => setConfirmHour(Number(e.target.value))}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
+          >
+            {Array.from({ length: 24 }, (_, h) => (
+              <option key={h} value={h}>
+                {formatHour(h)}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleConfirm}
+            disabled={confirming}
+            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+          >
+            {confirming ? "확정 중..." : "🎉 확정!"}
+          </button>
+        </div>
+        <p className="text-[11px] text-slate-400">
+          확정하면 방 맨 위에 확정 카드와 D-데이가 표시돼요.
+        </p>
       </div>
     </section>
   );

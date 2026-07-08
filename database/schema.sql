@@ -163,3 +163,27 @@ create policy "Allow anonymous update time votes"
   to anon
   using (true)
   with check (true);
+
+-- ============================================================
+-- 약속 확정: 방에 확정된 날짜/시간을 기록한다 (확정 전에는 null)
+-- ============================================================
+
+alter table public.schedule_rooms
+  add column if not exists confirmed_day integer
+    check (confirmed_day between 1 and 31);
+
+alter table public.schedule_rooms
+  add column if not exists confirmed_hour integer
+    check (confirmed_hour between 0 and 23);
+
+comment on column public.schedule_rooms.confirmed_day is '확정된 날짜(일). null이면 아직 조율 중';
+comment on column public.schedule_rooms.confirmed_hour is '확정된 만남 시각(0~23시)';
+
+-- 확정/취소를 위해 방 수정 허용
+drop policy if exists "Allow anonymous update rooms" on public.schedule_rooms;
+create policy "Allow anonymous update rooms"
+  on public.schedule_rooms
+  for update
+  to anon
+  using (true)
+  with check (true);

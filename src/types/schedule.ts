@@ -10,6 +10,9 @@ export interface ScheduleRoomRow {
   title: string;
   target_year: number;
   target_month: number;
+  // 약속 확정 정보 (확정 전에는 null)
+  confirmed_day: number | null;
+  confirmed_hour: number | null;
   created_at: string;
 }
 

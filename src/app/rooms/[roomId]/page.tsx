@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import GradientBackdrop from "@/components/ui/GradientBackdrop";
 import RoomView from "@/components/rooms/RoomView";
 import ShareButton from "@/components/rooms/ShareButton";
+import ConfirmedBanner from "@/components/rooms/ConfirmedBanner";
 import {
   supabase,
   ROOMS_TABLE,
@@ -121,6 +122,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
             </div>
           </div>
         </header>
+
+        {room.confirmed_day != null && <ConfirmedBanner room={room} />}
 
         <RoomView
           room={room}
