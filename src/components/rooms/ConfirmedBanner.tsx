@@ -39,17 +39,17 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   if (firstDay === null) return null;
 
   const segments = buildConfirmedSegments(slotMap);
-  const summary = segments.map(segmentText).join(", ");
   const weekday =
     WEEKDAYS[
       new Date(room.target_year, room.target_month - 1, firstDay).getDay()
     ];
 
-  // 하루짜리 확정이면 요일도 같이, 여러 날이면 구간 그대로
-  const titleText =
-    days.length === 1
-      ? `${room.target_month}월 ${summary.replace(`${firstDay}일`, `${firstDay}일 (${weekday})`)}`
-      : `${room.target_month}월 ${summary}`;
+  // 확정된 구간을 한 줄씩 아래로 쌓아서 표시 (첫 줄에만 월, 하루면 요일도)
+  const lines = segments.map(segmentText);
+  if (days.length === 1) {
+    lines[0] = lines[0].replace(`${firstDay}일`, `${firstDay}일 (${weekday})`);
+  }
+  lines[0] = `${room.target_month}월 ${lines[0]}`;
 
   const ddayLabel =
     dday === null
@@ -61,7 +61,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           : `D+${Math.abs(dday)}`;
 
   const handleShare = async () => {
-    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${titleText}\n👉 ${window.location.href}`;
+    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${lines.join("\n📅 ")}\n👉 ${window.location.href}`;
 
     const isTouchDevice = navigator.maxTouchPoints > 0;
     if (isTouchDevice && navigator.share) {
@@ -121,7 +121,13 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           <span className="text-xs font-bold tracking-widest text-indigo-100">
             🎉 약속 확정!
           </span>
-          <p className="text-2xl font-black leading-tight">{titleText}</p>
+          <div className="flex flex-col gap-0.5">
+            {lines.map((line) => (
+              <p key={line} className="text-2xl font-black leading-tight">
+                {line}
+              </p>
+            ))}
+          </div>
           <button
             type="button"
             onClick={handleShare}
