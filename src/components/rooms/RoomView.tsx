@@ -97,6 +97,33 @@ export default function RoomView({
   }
 
   return (
+    <>
+    {/* 확정 블록 오른쪽에 고정되어 스크롤을 따라오는 위/아래 이동 화살표 (넓은 화면 전용) */}
+    {panelOpen && (
+      <div className="fixed left-1/2 top-32 z-40 ml-60 hidden flex-col gap-3 xl:flex">
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="맨 위로"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: "smooth",
+            })
+          }
+          aria-label="맨 아래로"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+        >
+          ↓
+        </button>
+      </div>
+    )}
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
@@ -190,38 +217,14 @@ export default function RoomView({
           />
           <div className="relative">
             <PlaceFinder roomId={room.id} />
-            {/* "어디서 볼까?" 오른쪽 여백에 두는 작은 확정 카드 + 이동 화살표 (넓은 화면 전용) */}
-            <div className="absolute left-full top-0 ml-4 hidden w-52 flex-col gap-3 xl:flex">
+            {/* "어디서 볼까?" 오른쪽 여백에 두는 작은 확정 카드 (넓은 화면 전용) */}
+            <div className="absolute left-full top-0 ml-4 hidden w-52 xl:block">
               <ConfirmedBanner room={room} compact />
-              <div className="flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
-                  aria-label="맨 위로"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
-                >
-                  ↑
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    window.scrollTo({
-                      top: document.documentElement.scrollHeight,
-                      behavior: "smooth",
-                    })
-                  }
-                  aria-label="맨 아래로"
-                  className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
-                >
-                  ↓
-                </button>
-              </div>
             </div>
           </div>
         </div>
       )}
     </div>
+    </>
   );
 }
