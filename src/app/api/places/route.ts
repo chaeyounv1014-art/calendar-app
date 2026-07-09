@@ -3,6 +3,10 @@ import type { PlaceResult } from "@/types/place";
 
 // 카카오 로컬 키워드 검색을 서버에서 대신 호출한다.
 // REST API 키는 브라우저에 노출되면 안 되므로 이 서버 라우트가 중계한다.
+//
+// 검색은 2단계: ① 지역 이름으로 기준 좌표를 찾고
+// ② 그 반경 3km 안에서 키워드를 가까운 순으로 검색한다.
+// ("경희대 보드게임"처럼 문장 통째로 검색하면 못 찾는 경우가 많아서)
 
 const TYPE_KEYWORD: Record<string, string> = {
   food: "맛집",
@@ -20,6 +24,31 @@ interface KakaoPlaceDocument {
   address_name: string;
   phone: string;
   place_url: string;
+  x: string;
+  y: string;
+}
+
+async function searchKakao(
+  apiKey: string,
+  params: Record<string, string>
+): Promise<KakaoPlaceDocument[]> {
+  const url = new URL("https://dapi.kakao.com/v2/local/search/keyword.json");
+  for (const [key, value] of Object.entries(params)) {
+    url.searchParams.set(key, value);
+  }
+
+  const res = await fetch(url, {
+    headers: { Authorization: `KakaoAK ${apiKey}` },
+    cache: "no-store",
+  });
+
+  if (!res.ok) {
+    console.error("[places] kakao api error:", res.status, await res.text());
+    throw new Error("kakao api error");
+  }
+
+  const data = (await res.json()) as { documents?: KakaoPlaceDocument[] };
+  return data.documents ?? [];
 }
 
 export async function GET(request: NextRequest) {
@@ -41,34 +70,67 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // "custom"은 입력한 그대로 검색 (예: "성수 노래방")
-  const keyword = type === "custom" ? "" : (TYPE_KEYWORD[type] ?? TYPE_KEYWORD.food);
-  const url = new URL("https://dapi.kakao.com/v2/local/search/keyword.json");
-  url.searchParams.set("query", keyword ? `${area} ${keyword}` : area);
-  url.searchParams.set("size", "15");
+  // 직접 검색이면 첫 단어를 지역, 나머지를 키워드로 나눈다
+  // (예: "경희대 보드게임" -> 지역 "경희대" + 키워드 "보드게임")
+  let locationQuery = area;
+  let keyword: string;
+  if (type === "custom") {
+    const tokens = area.split(/\s+/);
+    if (tokens.length >= 2) {
+      locationQuery = tokens[0];
+      keyword = tokens.slice(1).join(" ");
+    } else {
+      keyword = "";
+    }
+  } else {
+    keyword = TYPE_KEYWORD[type] ?? TYPE_KEYWORD.food;
+  }
 
-  const res = await fetch(url, {
-    headers: { Authorization: `KakaoAK ${apiKey}` },
-    cache: "no-store",
-  });
+  try {
+    let docs: KakaoPlaceDocument[] = [];
 
-  if (!res.ok) {
-    console.error("[places] kakao api error:", res.status, await res.text());
+    if (keyword) {
+      // 1) 지역 이름 -> 기준 좌표
+      const anchors = await searchKakao(apiKey, {
+        query: locationQuery,
+        size: "1",
+      });
+      const anchor = anchors[0];
+
+      if (anchor?.x && anchor?.y) {
+        // 2) 기준 좌표 반경 3km에서 키워드 검색 (가까운 순)
+        docs = await searchKakao(apiKey, {
+          query: keyword,
+          x: anchor.x,
+          y: anchor.y,
+          radius: "3000",
+          size: "15",
+          sort: "distance",
+        });
+      }
+    }
+
+    // 좌표 검색이 안 되면 예전 방식(문장 통째 검색)으로 한 번 더 시도
+    if (docs.length === 0) {
+      const fallbackQuery =
+        type === "custom" ? area : `${area} ${keyword}`;
+      docs = await searchKakao(apiKey, { query: fallbackQuery, size: "15" });
+    }
+
+    const places: PlaceResult[] = docs.map((d) => ({
+      id: d.id,
+      name: d.place_name,
+      category: d.category_name?.split(" > ").pop() ?? "",
+      address: d.road_address_name || d.address_name,
+      phone: d.phone,
+      url: d.place_url,
+    }));
+
+    return NextResponse.json({ places });
+  } catch {
     return NextResponse.json(
       { error: "카카오 장소 검색에 실패했어요. 잠시 후 다시 시도해주세요." },
       { status: 502 }
     );
   }
-
-  const data = (await res.json()) as { documents?: KakaoPlaceDocument[] };
-  const places: PlaceResult[] = (data.documents ?? []).map((d) => ({
-    id: d.id,
-    name: d.place_name,
-    category: d.category_name?.split(" > ").pop() ?? "",
-    address: d.road_address_name || d.address_name,
-    phone: d.phone,
-    url: d.place_url,
-  }));
-
-  return NextResponse.json({ places });
 }
