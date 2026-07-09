@@ -5,6 +5,7 @@ import GradientBackdrop from "@/components/ui/GradientBackdrop";
 import RoomView from "@/components/rooms/RoomView";
 import ShareButton from "@/components/rooms/ShareButton";
 import ConfirmedBanner from "@/components/rooms/ConfirmedBanner";
+import DeleteRoomButton from "@/components/rooms/DeleteRoomButton";
 import {
   supabase,
   ROOMS_TABLE,
@@ -131,6 +132,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
           merged={merged}
           timeVotes={timeVotes}
         />
+
+        <DeleteRoomButton roomId={room.id} title={room.title} />
       </div>
     </main>
   );

@@ -187,3 +187,12 @@ create policy "Allow anonymous update rooms"
   to anon
   using (true)
   with check (true);
+
+-- 방 삭제 허용 (앱에서는 /api/rooms/delete 가 관리자 비밀번호를
+-- 확인한 뒤에만 호출하므로, 실질적으로 관리자 전용 기능)
+drop policy if exists "Allow anonymous delete rooms" on public.schedule_rooms;
+create policy "Allow anonymous delete rooms"
+  on public.schedule_rooms
+  for delete
+  to anon
+  using (true);
