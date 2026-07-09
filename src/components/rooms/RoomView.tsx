@@ -38,6 +38,25 @@ export default function RoomView({
     setReady(true);
   }, [room.id]);
 
+  // 맨 아래까지 스크롤한 상태에서 한 번 더 아래로 굴리면 맨 위로 스르륵
+  useEffect(() => {
+    let jumping = false;
+    const onWheel = (e: WheelEvent) => {
+      if (e.deltaY <= 0 || jumping) return;
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2;
+      if (!atBottom) return;
+      jumping = true;
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.setTimeout(() => {
+        jumping = false;
+      }, 900);
+    };
+    window.addEventListener("wheel", onWheel, { passive: true });
+    return () => window.removeEventListener("wheel", onWheel);
+  }, []);
+
   if (!ready) {
     return (
       <div className="flex justify-center py-16">
