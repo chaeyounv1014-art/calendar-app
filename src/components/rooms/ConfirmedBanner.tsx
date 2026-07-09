@@ -12,6 +12,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const router = useRouter();
   const [dday, setDday] = useState<number | null>(null);
   const [canceling, setCanceling] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const day = room.confirmed_day;
 
@@ -37,6 +38,30 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
         : dday > 0
           ? `D-${dday}`
           : `D+${Math.abs(dday)}`;
+
+  const handleShare = async () => {
+    const timeText =
+      room.confirmed_hour != null ? ` ${formatHour(room.confirmed_hour)}` : "";
+    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${room.target_month}월 ${day}일 (${weekday})${timeText}\n👉 ${window.location.href}`;
+
+    const isTouchDevice = navigator.maxTouchPoints > 0;
+    if (isTouchDevice && navigator.share) {
+      try {
+        await navigator.share({ text: message });
+      } catch {
+        // 공유 창을 그냥 닫은 경우
+      }
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(message);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      window.prompt("아래 내용을 복사해서 보내세요!", message);
+    }
+  };
 
   const handleCancel = async () => {
     if (canceling) return;
@@ -82,6 +107,13 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
               </span>
             )}
           </p>
+          <button
+            type="button"
+            onClick={handleShare}
+            className="mt-1 inline-flex w-fit items-center gap-1.5 rounded-full bg-white/25 px-4 py-2 text-xs font-bold text-white transition-all duration-150 hover:bg-white/40 active:scale-95"
+          >
+            {copied ? "✅ 복사 완료! 카톡에 붙여넣으세요" : "📤 확정 알리기"}
+          </button>
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           {ddayLabel && (

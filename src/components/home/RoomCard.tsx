@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { RoomWithCount } from "@/types/schedule";
 import { formatMonthLabel } from "@/lib/schedule/month";
+import ConfirmedChip from "./ConfirmedChip";
 
 export default function RoomCard({ room }: { room: RoomWithCount }) {
   return (
@@ -16,7 +17,14 @@ export default function RoomCard({ room }: { room: RoomWithCount }) {
           ➔
         </span>
       </div>
-      <div className="flex items-center gap-2 text-xs">
+      <div className="flex flex-wrap items-center gap-2 text-xs">
+        {room.confirmed_day != null && (
+          <ConfirmedChip
+            year={room.target_year}
+            month={room.target_month}
+            day={room.confirmed_day}
+          />
+        )}
         <span className="rounded-full bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-600">
           📅 {formatMonthLabel(room.target_year, room.target_month)}
         </span>
