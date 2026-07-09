@@ -93,9 +93,10 @@ export default function PlaceFinder() {
       <div className="flex flex-col gap-1">
         <h2 className="text-base font-black text-slate-900">📍 어디서 볼까?</h2>
         <p className="text-xs text-slate-500">
-          &quot;성수 맛집&quot;, &quot;경희대 보드게임&quot;처럼 지역과 함께
-          검색하면 그 근처 장소를 보여드려요. 결과를 누르면 카카오맵 상세
-          페이지가 열려요.
+          지역과 장소를 검색하면 근처 장소를 보여드려요
+        </p>
+        <p className="text-xs text-slate-500">
+          버튼을 누르면 카카오맵 상세 페이지가 열려요
         </p>
       </div>
 
