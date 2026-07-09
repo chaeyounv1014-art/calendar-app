@@ -90,3 +90,23 @@ export function segmentText(seg: ConfirmedSegment): string {
 export function confirmedSummaryText(map: ConfirmedSlotMap): string {
   return buildConfirmedSegments(map).map(segmentText).join(", ");
 }
+
+export interface ConfirmedPlace {
+  name: string;
+  address: string;
+  url: string;
+}
+
+export function parseConfirmedPlace(
+  room: ScheduleRoomRow
+): ConfirmedPlace | null {
+  const raw = room.confirmed_place;
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
+  const name = typeof raw.name === "string" ? raw.name.trim() : "";
+  if (!name) return null;
+  return {
+    name,
+    address: typeof raw.address === "string" ? raw.address : "",
+    url: typeof raw.url === "string" ? raw.url : "",
+  };
+}

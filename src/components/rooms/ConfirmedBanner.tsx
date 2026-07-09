@@ -8,6 +8,7 @@ import {
   confirmedDays,
   buildConfirmedSegments,
   segmentText,
+  parseConfirmedPlace,
 } from "@/lib/schedule/confirm";
 import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
@@ -22,6 +23,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const slotMap = parseConfirmedSlots(room);
   const days = confirmedDays(slotMap);
   const firstDay = days.length > 0 ? days[0] : null;
+  const place = parseConfirmedPlace(room);
 
   // D-데이는 보는 사람 컴퓨터의 오늘 날짜 기준, 첫 확정일까지
   useEffect(() => {
@@ -61,7 +63,8 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           : `D+${Math.abs(dday)}`;
 
   const handleShare = async () => {
-    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${lines.join("\n📅 ")}\n👉 ${window.location.href}`;
+    const placeLine = place ? `\n📍 ${place.name}` : "";
+    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${lines.join("\n📅 ")}${placeLine}\n👉 ${window.location.href}`;
 
     const isTouchDevice = navigator.maxTouchPoints > 0;
     if (isTouchDevice && navigator.share) {
@@ -96,6 +99,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
         confirmed_slots: {},
         confirmed_day: null,
         confirmed_hour: null,
+        confirmed_place: null,
       })
       .eq("id", room.id)
       .select();
@@ -128,6 +132,29 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
               </p>
             ))}
           </div>
+          {place && (
+            <p className="text-sm font-bold text-cyan-100">
+              📍{" "}
+              {place.url ? (
+                <a
+                  href={place.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="underline underline-offset-2 hover:text-white"
+                >
+                  {place.name}
+                </a>
+              ) : (
+                place.name
+              )}
+              {place.address && (
+                <span className="text-xs font-normal text-indigo-100">
+                  {" "}
+                  · {place.address}
+                </span>
+              )}
+            </p>
+          )}
           <button
             type="button"
             onClick={handleShare}

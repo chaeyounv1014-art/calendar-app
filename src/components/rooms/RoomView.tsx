@@ -165,7 +165,7 @@ export default function RoomView({
             votes={timeVotes.filter((v) => validDays.includes(v.day))}
             onClose={() => setSelectedDays([])}
           />
-          <PlaceFinder />
+          <PlaceFinder roomId={room.id} />
         </>
       )}
     </div>

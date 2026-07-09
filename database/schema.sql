@@ -186,6 +186,12 @@ alter table public.schedule_rooms
 
 comment on column public.schedule_rooms.confirmed_slots is '일자별 확정 시간 범위 {"일":{"start":시,"end":시}}';
 
+-- 확정된 장소 {"name":"가게 이름","address":"주소","url":"카카오맵 링크"}
+alter table public.schedule_rooms
+  add column if not exists confirmed_place jsonb;
+
+comment on column public.schedule_rooms.confirmed_place is '확정된 장소 (이름/주소/카카오맵 링크)';
+
 -- 확정/취소를 위해 방 수정 허용
 drop policy if exists "Allow anonymous update rooms" on public.schedule_rooms;
 create policy "Allow anonymous update rooms"

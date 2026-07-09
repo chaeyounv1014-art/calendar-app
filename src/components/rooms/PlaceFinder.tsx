@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { PlaceResult } from "@/types/place";
+import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
 // 카카오는 가게 사진을 제공하지 않으므로, 카테고리에 어울리는
 // 이모지 썸네일로 사진 자리를 채운다
@@ -44,11 +46,43 @@ const THUMB_BG = [
   "bg-gradient-to-br from-violet-100 to-fuchsia-100",
 ];
 
-export default function PlaceFinder() {
+export default function PlaceFinder({ roomId }: { roomId: string }) {
+  const router = useRouter();
   const [area, setArea] = useState("");
   const [places, setPlaces] = useState<PlaceResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [savingPlaceId, setSavingPlaceId] = useState<string | null>(null);
+
+  const handleConfirmPlace = async (p: PlaceResult) => {
+    if (savingPlaceId) return;
+    const ok = window.confirm(`'${p.name}'(으)로 장소를 확정할까요?`);
+    if (!ok) return;
+
+    setSavingPlaceId(p.id);
+    const { data, error } = await supabase
+      .from(ROOMS_TABLE)
+      .update({
+        confirmed_place: { name: p.name, address: p.address, url: p.url },
+      })
+      .eq("id", roomId)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      console.error(
+        "[room] failed to confirm place:",
+        error?.message ?? "no rows updated"
+      );
+      window.alert(
+        "장소 확정에 실패했어요. Supabase에 confirmed_place 컬럼이 있는지 확인해주세요."
+      );
+      setSavingPlaceId(null);
+      return;
+    }
+
+    setSavingPlaceId(null);
+    router.refresh();
+  };
 
   const runSearch = async () => {
     const query = area.trim();
@@ -106,7 +140,7 @@ export default function PlaceFinder() {
           value={area}
           onChange={(e) => setArea(e.target.value)}
           maxLength={30}
-          placeholder="예: 성수 맛집, 경희대 보드게임"
+          placeholder="예: 성수 맛집"
           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
         />
         <button
@@ -146,9 +180,23 @@ export default function PlaceFinder() {
                   {placeEmoji(p.category)}
                 </div>
                 <div className="flex flex-col gap-1 p-3">
-                  <span className="line-clamp-1 text-[13px] font-bold text-slate-800">
-                    {p.name}
-                  </span>
+                  <div className="flex items-start justify-between gap-1.5">
+                    <span className="line-clamp-1 min-w-0 text-[13px] font-bold text-slate-800">
+                      {p.name}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleConfirmPlace(p);
+                      }}
+                      disabled={savingPlaceId !== null}
+                      className="shrink-0 rounded-full bg-indigo-600 px-2 py-1 text-[10px] font-bold text-white transition-all duration-150 hover:bg-indigo-500 active:scale-95 disabled:opacity-50"
+                    >
+                      여기로 확정!
+                    </button>
+                  </div>
                   {p.category && (
                     <span className="w-fit rounded-full bg-indigo-50 px-2 py-0.5 text-[10px] font-semibold text-indigo-500">
                       {p.category}
