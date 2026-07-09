@@ -63,6 +63,9 @@ export default async function HomePage() {
             각자 가능한 날에 O·세모·X만 표시하면, 겹치는 날짜를 캘린더로
             한눈에 보여드려요.
           </p>
+          <p className="animate-fade-in-up text-balance text-sm font-bold text-slate-900">
+            팀별로 방을 만들어서 팀별로 회식 일정을 잡아보세요!
+          </p>
         </header>
 
         <Link
