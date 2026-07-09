@@ -92,8 +92,8 @@ export default function TimeVotePanel({
               onClick={() => setActiveDay(d)}
               className={`rounded-full border px-4 py-2 text-sm font-bold transition-all duration-150 active:scale-95 ${
                 d === currentDay
-                  ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-200"
-                  : "border-slate-200 bg-white text-slate-500 hover:border-indigo-300"
+                  ? "border-amber-400 bg-amber-200 text-amber-900 shadow-md shadow-amber-100"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-amber-300"
               }`}
             >
               {d}일
