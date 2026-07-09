@@ -100,12 +100,12 @@ export default function RoomView({
     <>
     {/* 확정 블록 오른쪽에 고정되어 스크롤을 따라오는 위/아래 이동 화살표 (넓은 화면 전용) */}
     {panelOpen && (
-      <div className="fixed left-1/2 top-1/2 z-40 ml-60 hidden -translate-y-1/2 flex-col gap-3 xl:flex">
+      <div className="fixed bottom-28 left-1/2 z-40 ml-60 hidden flex-col gap-2 xl:flex">
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
           aria-label="맨 위로"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-base text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
         >
           ↑
         </button>
@@ -118,7 +118,7 @@ export default function RoomView({
             })
           }
           aria-label="맨 아래로"
-          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+          className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-base text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
         >
           ↓
         </button>
