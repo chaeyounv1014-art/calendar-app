@@ -218,7 +218,7 @@ export default function RoomView({
           <div className="relative">
             <PlaceFinder roomId={room.id} />
             {/* "어디서 볼까?" 오른쪽 여백에 두는 작은 확정 카드 (넓은 화면 전용) */}
-            <div className="absolute left-full top-0 ml-4 hidden w-52 xl:block">
+            <div className="absolute left-full top-0 ml-20 hidden w-52 xl:block">
               <ConfirmedBanner room={room} compact />
             </div>
           </div>
