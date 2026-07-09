@@ -109,15 +109,18 @@ export default function RoomView({
           <h2 className="text-base font-black text-slate-900">
             🎯 모두가 되는 날
           </h2>
-          <p className="text-xs text-slate-500">
+          <p className="text-center text-xs text-slate-500">
             <span className="font-bold text-emerald-600">초록</span>은 전원
             종일 가능, <span className="font-bold text-amber-600">노랑</span>은
             일부 시간 가능인 사람이 섞여 있는 날이에요.
           </p>
-          <p className="text-xs text-slate-500">
-            한 명이라도 ✕이거나 아직 입력하지 않은 날은 표시되지 않아요.
+          <p className="text-center text-xs text-slate-500">
+            한 명이라도 <span className="font-bold text-rose-500">✕</span>이거나
+            아직{" "}
+            <span className="font-bold text-indigo-600">입력하지 않은 날</span>
+            은 표시되지 않아요.
           </p>
-          <p className="text-sm font-bold text-indigo-600">
+          <p className="text-center text-sm font-bold text-indigo-600">
             색칠된 칸을 눌러 약속 시간을 정하세요!
           </p>
         </div>
