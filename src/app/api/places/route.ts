@@ -41,9 +41,10 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const keyword = TYPE_KEYWORD[type] ?? TYPE_KEYWORD.food;
+  // "custom"은 입력한 그대로 검색 (예: "성수 노래방")
+  const keyword = type === "custom" ? "" : (TYPE_KEYWORD[type] ?? TYPE_KEYWORD.food);
   const url = new URL("https://dapi.kakao.com/v2/local/search/keyword.json");
-  url.searchParams.set("query", `${area} ${keyword}`);
+  url.searchParams.set("query", keyword ? `${area} ${keyword}` : area);
   url.searchParams.set("size", "15");
 
   const res = await fetch(url, {

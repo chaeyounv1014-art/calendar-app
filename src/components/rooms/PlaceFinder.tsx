@@ -9,6 +9,7 @@ const CATEGORIES = [
   { key: "play", label: "🎪 놀거리" },
   { key: "bakery", label: "🥐 빵집" },
   { key: "bar", label: "🍺 술집" },
+  { key: "custom", label: "🔍 직접 검색" },
 ] as const;
 
 type CategoryKey = (typeof CATEGORIES)[number]["key"];
@@ -45,6 +46,7 @@ const DEFAULT_EMOJI: Record<CategoryKey, string> = {
   play: "🎪",
   bakery: "🥐",
   bar: "🍺",
+  custom: "📍",
 };
 
 function placeEmoji(categoryText: string, fallback: CategoryKey): string {
@@ -132,7 +134,9 @@ export default function PlaceFinder() {
           value={area}
           onChange={(e) => setArea(e.target.value)}
           maxLength={30}
-          placeholder="예: 성수, 홍대"
+          placeholder={
+            category === "custom" ? "예: 성수 노래방, 홍대 방탈출" : "예: 성수, 홍대"
+          }
           className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
         />
         <button
