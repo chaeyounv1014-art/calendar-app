@@ -33,29 +33,14 @@ export default function RoomView({
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
   const panelRef = useRef<HTMLDivElement | null>(null);
 
+  // 시간·장소 패널이 열려 있는지 (되는 날을 하나 이상 고른 상태)
+  const validDays = selectedDays.filter((d) => merged.days[d]?.included);
+  const panelOpen = validDays.length > 0;
+
   useEffect(() => {
     setName(getStoredName(room.id));
     setReady(true);
   }, [room.id]);
-
-  // 맨 아래까지 스크롤한 상태에서 한 번 더 아래로 굴리면 맨 위로 스르륵
-  useEffect(() => {
-    let jumping = false;
-    const onWheel = (e: WheelEvent) => {
-      if (e.deltaY <= 0 || jumping) return;
-      const atBottom =
-        window.innerHeight + window.scrollY >=
-        document.documentElement.scrollHeight - 2;
-      if (!atBottom) return;
-      jumping = true;
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      window.setTimeout(() => {
-        jumping = false;
-      }, 900);
-    };
-    window.addEventListener("wheel", onWheel, { passive: true });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, []);
 
   if (!ready) {
     return (
@@ -103,7 +88,6 @@ export default function RoomView({
     }
   };
 
-  const validDays = selectedDays.filter((d) => merged.days[d]?.included);
   const participantsByDay: Record<number, string[]> = {};
   for (const d of validDays) {
     const result = merged.days[d];
@@ -113,6 +97,7 @@ export default function RoomView({
   }
 
   return (
+    <>
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between">
@@ -214,5 +199,33 @@ export default function RoomView({
         </div>
       )}
     </div>
+
+    {/* 패널이 열렸을 때만: 맨 위/맨 아래로 이동하는 화살표 버튼 */}
+    {panelOpen && (
+      <div className="fixed bottom-6 right-6 z-40 flex flex-col gap-2">
+        <button
+          type="button"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          aria-label="맨 위로"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+        >
+          ↑
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            window.scrollTo({
+              top: document.documentElement.scrollHeight,
+              behavior: "smooth",
+            })
+          }
+          aria-label="맨 아래로"
+          className="flex h-11 w-11 items-center justify-center rounded-full border border-slate-200 bg-white text-lg text-slate-500 shadow-lg transition-all duration-150 hover:border-indigo-300 hover:text-indigo-600 active:scale-90"
+        >
+          ↓
+        </button>
+      </div>
+    )}
+    </>
   );
 }
