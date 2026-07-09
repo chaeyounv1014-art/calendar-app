@@ -1,10 +1,49 @@
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { ScheduleEntryRow } from "@/types/schedule";
+import { supabase, ENTRIES_TABLE } from "@/lib/supabase";
 
 export default function ParticipantList({
   entries,
 }: {
   entries: ScheduleEntryRow[];
 }) {
+  const router = useRouter();
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (entry: ScheduleEntryRow) => {
+    if (deletingId) return;
+
+    const confirmed = window.confirm(
+      `'${entry.participant_name}'님을 참여자에서 뺄까요?\n입력한 캘린더도 함께 삭제되고, 결과가 다시 계산돼요.`
+    );
+    if (!confirmed) return;
+
+    setDeletingId(entry.id);
+
+    const { data, error } = await supabase
+      .from(ENTRIES_TABLE)
+      .delete()
+      .eq("id", entry.id)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      // RLS 정책이 없으면 에러 없이 0건 삭제로 끝나므로 함께 잡아준다
+      console.error(
+        "[room] failed to delete entry:",
+        error?.message ?? "no rows deleted (RLS delete policy missing?)"
+      );
+      window.alert("삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setDeletingId(null);
+      return;
+    }
+
+    setDeletingId(null);
+    router.refresh();
+  };
+
   if (entries.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-slate-300 bg-white/60 px-4 py-3 text-center text-xs text-slate-400">
@@ -18,12 +57,23 @@ export default function ParticipantList({
       {entries.map((entry) => (
         <span
           key={entry.id}
-          className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-3 text-xs font-semibold text-slate-700 shadow-sm"
+          className={`inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white py-1 pl-1 pr-1.5 text-xs font-semibold text-slate-700 shadow-sm transition-opacity ${
+            deletingId === entry.id ? "opacity-40" : ""
+          }`}
         >
           <span className="flex h-5 w-5 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-cyan-400 text-[10px] font-black text-white">
             {entry.participant_name.charAt(0)}
           </span>
           {entry.participant_name}
+          <button
+            type="button"
+            onClick={() => handleDelete(entry)}
+            disabled={deletingId !== null}
+            aria-label={`${entry.participant_name} 삭제`}
+            className="flex h-4 w-4 items-center justify-center rounded-full text-[10px] font-bold text-slate-300 transition-colors hover:bg-rose-50 hover:text-rose-500 disabled:pointer-events-none"
+          >
+            ✕
+          </button>
         </span>
       ))}
     </div>
