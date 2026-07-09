@@ -148,7 +148,31 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   };
 
   return (
-    <section className="sticky top-3 z-30 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 p-5 text-white shadow-xl shadow-indigo-300/60">
+    <>
+      {/* 넓은 화면의 왼쪽 여백에 떠서 스크롤을 따라오는 미니 확정 카드 */}
+      <aside className="fixed left-6 top-28 z-30 hidden w-56 flex-col gap-1.5 rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-500 p-4 text-white shadow-xl shadow-indigo-300/60 xl:flex">
+        <span className="text-[10px] font-bold tracking-widest text-indigo-100">
+          🎉 약속 확정!
+        </span>
+        {lines.map((line) => (
+          <p key={line} className="text-sm font-black leading-tight">
+            {line}
+          </p>
+        ))}
+        {places.map((pl, i) => (
+          <p key={pl.name} className="text-[11px] font-semibold text-cyan-100">
+            {places.length > 1 ? `${i + 1}. ` : ""}
+            {pl.name}
+          </p>
+        ))}
+        {ddayLabel && (
+          <span className="mt-1 w-fit rounded-full bg-white/25 px-2.5 py-1 text-xs font-black">
+            {ddayLabel}
+          </span>
+        )}
+      </aside>
+
+      <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 p-5 text-white shadow-xl shadow-indigo-300/60">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-bold tracking-widest text-indigo-100">
@@ -227,5 +251,6 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
         </div>
       </div>
     </section>
+    </>
   );
 }
