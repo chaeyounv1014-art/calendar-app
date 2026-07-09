@@ -9,6 +9,7 @@ import {
   buildConfirmedSegments,
   segmentText,
   parseConfirmedPlaces,
+  type ConfirmedPlace,
 } from "@/lib/schedule/confirm";
 import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
@@ -19,6 +20,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const [dday, setDday] = useState<number | null>(null);
   const [canceling, setCanceling] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [removingName, setRemovingName] = useState<string | null>(null);
 
   const slotMap = parseConfirmedSlots(room);
   const days = confirmedDays(slotMap);
@@ -85,6 +87,33 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
     }
   };
 
+  const handleRemovePlace = async (target: ConfirmedPlace) => {
+    if (removingName) return;
+    const ok = window.confirm(`'${target.name}'을(를) 확정 장소에서 뺄까요?`);
+    if (!ok) return;
+
+    setRemovingName(target.name);
+    const next = places.filter((pl) => pl.name !== target.name);
+    const { data, error } = await supabase
+      .from(ROOMS_TABLE)
+      .update({ confirmed_place: next })
+      .eq("id", room.id)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      console.error(
+        "[room] failed to remove place:",
+        error?.message ?? "no rows updated"
+      );
+      window.alert("삭제에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setRemovingName(null);
+      return;
+    }
+
+    setRemovingName(null);
+    router.refresh();
+  };
+
   const handleCancel = async () => {
     if (canceling) return;
     const ok = window.confirm(
@@ -135,26 +164,40 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           {places.length > 0 && (
             <div className="flex flex-col gap-0.5">
               {places.map((pl, i) => (
-                <p key={pl.name} className="text-sm font-bold text-cyan-100">
-                  📍 {places.length > 1 ? `${i + 1}. ` : ""}
-                  {pl.url ? (
-                    <a
-                      href={pl.url}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="underline underline-offset-2 hover:text-white"
-                    >
-                      {pl.name}
-                    </a>
-                  ) : (
-                    pl.name
-                  )}
-                  {pl.address && (
-                    <span className="text-xs font-normal text-indigo-100">
-                      {" "}
-                      · {pl.address}
-                    </span>
-                  )}
+                <p
+                  key={pl.name}
+                  className="flex items-center gap-1.5 text-sm font-bold text-cyan-100"
+                >
+                  <span>
+                    {places.length > 1 ? `${i + 1}. ` : ""}
+                    {pl.url ? (
+                      <a
+                        href={pl.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="underline underline-offset-2 hover:text-white"
+                      >
+                        {pl.name}
+                      </a>
+                    ) : (
+                      pl.name
+                    )}
+                    {pl.address && (
+                      <span className="text-xs font-normal text-indigo-100">
+                        {" "}
+                        · {pl.address}
+                      </span>
+                    )}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemovePlace(pl)}
+                    disabled={removingName !== null}
+                    aria-label={`${pl.name} 삭제`}
+                    className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full text-[10px] font-bold text-indigo-200 transition-colors hover:bg-white/25 hover:text-white disabled:opacity-50"
+                  >
+                    ✕
+                  </button>
                 </p>
               ))}
             </div>
