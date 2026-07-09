@@ -4,11 +4,11 @@ import { MergedDayCell } from "./DayCell";
 
 export default function MergedCalendar({
   merged,
-  selectedDay,
+  selectedDays,
   onSelectDay,
 }: {
   merged: MergedMonthResult;
-  selectedDay?: number | null;
+  selectedDays?: number[];
   onSelectDay?: (day: number) => void;
 }) {
   const cells = buildMonthGrid(merged.year, merged.month);
@@ -37,7 +37,7 @@ export default function MergedCalendar({
             key={index}
             day={cell.day}
             result={cell.day !== null ? merged.days[cell.day] : undefined}
-            selected={cell.day !== null && cell.day === selectedDay}
+            selected={cell.day !== null && selectedDays?.includes(cell.day)}
             onSelect={
               cell.day !== null && onSelectDay
                 ? () => onSelectDay(cell.day as number)

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { TimeVoteRow } from "@/types/schedule";
 import {
@@ -13,14 +13,118 @@ import {
 import { supabase, TIME_VOTES_TABLE, ROOMS_TABLE } from "@/lib/supabase";
 import { ClockDialInput, ClockDialResult } from "./ClockDial";
 
+// 연속된 날짜는 "5~6일"처럼 묶어서 표시 (여행 등 여러 날 약속용)
+function daysRangeLabel(days: number[]): string {
+  const runs: Array<{ start: number; end: number }> = [];
+  for (const d of days) {
+    const last = runs[runs.length - 1];
+    if (last && d === last.end + 1) {
+      last.end = d;
+    } else {
+      runs.push({ start: d, end: d });
+    }
+  }
+  return runs
+    .map((r) => (r.start === r.end ? `${r.start}일` : `${r.start}~${r.end}일`))
+    .join(", ");
+}
+
 export default function TimeVotePanel({
+  roomId,
+  month,
+  days,
+  participantName,
+  participantsByDay,
+  votes,
+  onClose,
+}: {
+  roomId: string;
+  month: number;
+  days: number[];
+  participantName: string;
+  participantsByDay: Record<number, string[]>;
+  votes: TimeVoteRow[];
+  onClose: () => void;
+}) {
+  const [activeDay, setActiveDay] = useState<number>(days[0]);
+
+  // 보고 있던 날짜가 선택 해제되면 남은 첫 날짜로 이동
+  useEffect(() => {
+    if (!days.includes(activeDay)) {
+      setActiveDay(days[0]);
+    }
+  }, [days, activeDay]);
+
+  const currentDay = days.includes(activeDay) ? activeDay : days[0];
+
+  return (
+    <section className="flex flex-col gap-5 rounded-2xl border-2 border-indigo-300 bg-white p-5 shadow-xl shadow-indigo-200/60">
+      <div className="flex items-start justify-between gap-2">
+        <div className="flex flex-col gap-2">
+          <span className="w-fit rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
+            ⏰ 시간 정하기
+          </span>
+          <h2 className="text-2xl font-black leading-tight text-slate-900">
+            {month}월 {daysRangeLabel(days)}
+          </h2>
+          <p className="text-sm font-semibold text-slate-600">
+            {days.length > 1
+              ? "날짜별로 몇 시에 볼지 정해보세요!"
+              : "이 날 몇 시에 볼까요?"}
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="시간 정하기 닫기"
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+        >
+          ✕
+        </button>
+      </div>
+
+      {days.length > 1 && (
+        <div className="flex flex-wrap gap-2">
+          {days.map((d) => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => setActiveDay(d)}
+              className={`rounded-full border px-4 py-2 text-sm font-bold transition-all duration-150 active:scale-95 ${
+                d === currentDay
+                  ? "border-indigo-600 bg-indigo-600 text-white shadow-md shadow-indigo-200"
+                  : "border-slate-200 bg-white text-slate-500 hover:border-indigo-300"
+              }`}
+            >
+              {d}일
+            </button>
+          ))}
+        </div>
+      )}
+
+      <DayTimeSection
+        key={currentDay}
+        roomId={roomId}
+        month={month}
+        day={currentDay}
+        participantName={participantName}
+        dayParticipants={participantsByDay[currentDay] ?? []}
+        votes={votes.filter((v) => v.day === currentDay)}
+        onConfirmed={onClose}
+      />
+    </section>
+  );
+}
+
+// 하루치 시간 투표 + 결과 + 확정 (날짜 탭을 바꾸면 key로 새로 마운트됨)
+function DayTimeSection({
   roomId,
   month,
   day,
   participantName,
   dayParticipants,
   votes,
-  onClose,
+  onConfirmed,
 }: {
   roomId: string;
   month: number;
@@ -28,17 +132,16 @@ export default function TimeVotePanel({
   participantName: string;
   dayParticipants: string[];
   votes: TimeVoteRow[];
-  onClose: () => void;
+  onConfirmed: () => void;
 }) {
   const router = useRouter();
-  const panelRef = useRef<HTMLElement | null>(null);
 
-  // 날짜를 고르면 이 카드가 바로 보이도록 스크롤
-  useEffect(() => {
-    panelRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-  }, []);
-
+  // 결과 집계에는 "이 날 되는 사람"의 투표만 사용
+  const displayVotes = votes.filter((v) =>
+    dayParticipants.includes(v.participant_name)
+  );
   const myVote = votes.find((v) => v.participant_name === participantName);
+
   const [myHours, setMyHours] = useState<number[]>(
     parseHourSlots(myVote?.slots)
   );
@@ -47,7 +150,7 @@ export default function TimeVotePanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [confirmHour, setConfirmHour] = useState<number>(() => {
-    const hours = allAvailableHours(votes, dayParticipants);
+    const hours = allAvailableHours(displayVotes, dayParticipants);
     return hours.length > 0 ? hours[0] : 12;
   });
 
@@ -110,14 +213,14 @@ export default function TimeVotePanel({
     }
 
     setConfirming(false);
-    onClose();
+    onConfirmed();
     router.refresh();
   };
 
-  const counts = buildHourCounts(votes);
-  const everyoneHours = allAvailableHours(votes, dayParticipants);
+  const counts = buildHourCounts(displayVotes);
+  const everyoneHours = allAvailableHours(displayVotes, dayParticipants);
   const votedNames = new Set(
-    votes
+    displayVotes
       .filter((v) => parseHourSlots(v.slots).length > 0)
       .map((v) => v.participant_name)
   );
@@ -125,39 +228,14 @@ export default function TimeVotePanel({
   const total = dayParticipants.length;
 
   return (
-    <section
-      ref={panelRef}
-      className="flex flex-col gap-6 rounded-2xl border-2 border-indigo-300 bg-white p-5 shadow-xl shadow-indigo-200/60"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex flex-col gap-2">
-          <span className="w-fit rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold text-indigo-600">
-            ⏰ 시간 정하기
-          </span>
-          <h2 className="text-2xl font-black leading-tight text-slate-900">
-            {month}월 {day}일
-          </h2>
-          <p className="text-sm font-semibold text-slate-600">
-            이 날 몇 시에 볼까요?
-          </p>
-          <p className="text-[11px] text-slate-500">
-            이 날 되는 사람: {dayParticipants.join(", ")}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="시간 정하기 닫기"
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-sm font-bold text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
-        >
-          ✕
-        </button>
-      </div>
-
+    <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold text-slate-700">
-          🖐️ {participantName}님이 가능한 시간 — 시계를 꾹 누른 채 시계
-          방향으로 쭉 드래그하세요
+          🖐️ {day}일에 {participantName}님이 가능한 시간 — 시계를 꾹 누른 채
+          시계 방향으로 쭉 드래그하세요
+        </p>
+        <p className="text-[11px] text-slate-500">
+          이 날 되는 사람: {dayParticipants.join(", ")}
         </p>
         <ClockDialInput hours={myHours} onChange={handleHoursChange} />
         <div className="flex min-h-6 items-center justify-between gap-2">
@@ -194,7 +272,9 @@ export default function TimeVotePanel({
       </div>
 
       <div className="flex flex-col gap-3 border-t border-slate-100 pt-5">
-        <p className="text-xs font-bold text-slate-700">👀 다들 되는 시간</p>
+        <p className="text-xs font-bold text-slate-700">
+          👀 {day}일에 다들 되는 시간
+        </p>
         <ClockDialResult counts={counts} total={total} />
         <div className="flex items-center justify-center gap-4 text-[11px] text-slate-500">
           <span className="flex items-center gap-1.5">
@@ -218,7 +298,7 @@ export default function TimeVotePanel({
         )}
 
         <div className="flex flex-col gap-1">
-          {votes.map((v) => {
+          {displayVotes.map((v) => {
             const text = hoursToRangeText(parseHourSlots(v.slots));
             if (!text) return null;
             return (
@@ -240,7 +320,7 @@ export default function TimeVotePanel({
 
       <div className="flex flex-col gap-3 border-t border-slate-100 pt-5">
         <p className="text-xs font-bold text-slate-700">
-          📌 이 날로 약속 확정하기
+          📌 {day}일로 약속 확정하기
         </p>
         <div className="flex gap-2">
           <select
@@ -267,6 +347,6 @@ export default function TimeVotePanel({
           확정하면 방 맨 위에 확정 카드와 D-데이가 표시돼요.
         </p>
       </div>
-    </section>
+    </div>
   );
 }

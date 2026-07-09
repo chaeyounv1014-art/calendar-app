@@ -29,7 +29,7 @@ export default function RoomView({
 }) {
   const [name, setName] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
-  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [selectedDays, setSelectedDays] = useState<number[]>([]);
 
   useEffect(() => {
     setName(getStoredName(room.id));
@@ -55,15 +55,23 @@ export default function RoomView({
     setName(null);
   };
 
+  // 같은 날짜를 다시 누르면 해제, 다른 날짜를 누르면 함께 선택 (여행용)
   const handleSelectDay = (day: number) => {
-    setSelectedDay((prev) => (prev === day ? null : day));
+    setSelectedDays((prev) =>
+      prev.includes(day)
+        ? prev.filter((d) => d !== day)
+        : [...prev, day].sort((a, b) => a - b)
+    );
   };
 
-  const selectedResult =
-    selectedDay !== null ? merged.days[selectedDay] : undefined;
-  const dayParticipants = selectedResult?.included
-    ? selectedResult.groups.flatMap((g) => g.names)
-    : [];
+  const validDays = selectedDays.filter((d) => merged.days[d]?.included);
+  const participantsByDay: Record<number, string[]> = {};
+  for (const d of validDays) {
+    const result = merged.days[d];
+    participantsByDay[d] = result?.included
+      ? result.groups.flatMap((g) => g.names)
+      : [];
+  }
 
   return (
     <div className="flex flex-col gap-8">
@@ -127,29 +135,27 @@ export default function RoomView({
           <p className="text-sm font-bold text-indigo-600">
             색칠된 칸을 눌러 약속 시간을 정하세요!
           </p>
+          <p className="text-xs text-slate-500">
+            여행처럼 여러 날이면 날짜를 이어서 눌러 함께 선택할 수 있어요.
+          </p>
         </div>
         <MergedCalendar
           merged={merged}
-          selectedDay={selectedDay}
+          selectedDays={selectedDays}
           onSelectDay={handleSelectDay}
         />
       </section>
 
-      {selectedDay !== null && selectedResult?.included && (
+      {validDays.length > 0 && (
         <>
           <TimeVotePanel
-            key={selectedDay}
             roomId={room.id}
             month={room.target_month}
-            day={selectedDay}
+            days={validDays}
             participantName={name}
-            dayParticipants={dayParticipants}
-            votes={timeVotes.filter(
-              (v) =>
-                v.day === selectedDay &&
-                dayParticipants.includes(v.participant_name)
-            )}
-            onClose={() => setSelectedDay(null)}
+            participantsByDay={participantsByDay}
+            votes={timeVotes.filter((v) => validDays.includes(v.day))}
+            onClose={() => setSelectedDays([])}
           />
           <PlaceFinder />
         </>
