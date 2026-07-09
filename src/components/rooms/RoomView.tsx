@@ -89,8 +89,10 @@ export default function RoomView({
             ✏️ {name}님의 캘린더
           </h2>
           <p className="text-xs text-slate-500">
-            날짜를 누를 때마다 ○ → △ → ✕ → 빈칸 순서로 바뀌어요. 다
-            표시했으면 꼭 저장을 눌러주세요!
+            날짜를 누를 때마다 ○ → △ → ✕ → 빈칸 순서로 바뀌어요.
+          </p>
+          <p className="text-xs text-slate-500">
+            다 표시했으면 꼭 저장을 눌러주세요!
           </p>
         </div>
         <StatusLegend />
