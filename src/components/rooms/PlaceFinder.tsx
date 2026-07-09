@@ -56,15 +56,43 @@ export default function PlaceFinder({ roomId }: { roomId: string }) {
 
   const handleConfirmPlace = async (p: PlaceResult) => {
     if (savingPlaceId) return;
-    const ok = window.confirm(`'${p.name}'(으)로 장소를 확정할까요?`);
+    const ok = window.confirm(`'${p.name}'을(를) 확정 장소에 추가할까요?`);
     if (!ok) return;
 
     setSavingPlaceId(p.id);
+
+    // 기존 확정 장소 목록을 불러와 뒤에 추가 (누른 순서대로 쌓임)
+    const { data: roomRow, error: fetchError } = await supabase
+      .from(ROOMS_TABLE)
+      .select("confirmed_place")
+      .eq("id", roomId)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error("[room] failed to load places:", fetchError.message);
+      window.alert("장소 확정에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setSavingPlaceId(null);
+      return;
+    }
+
+    const raw = roomRow?.confirmed_place;
+    const current: Array<{ name: string; address: string; url: string }> =
+      Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+    if (current.some((x) => x?.name === p.name)) {
+      window.alert("이미 확정 목록에 있는 장소예요!");
+      setSavingPlaceId(null);
+      return;
+    }
+
+    const next = [
+      ...current,
+      { name: p.name, address: p.address, url: p.url },
+    ];
+
     const { data, error } = await supabase
       .from(ROOMS_TABLE)
-      .update({
-        confirmed_place: { name: p.name, address: p.address, url: p.url },
-      })
+      .update({ confirmed_place: next })
       .eq("id", roomId)
       .select();
 

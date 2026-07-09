@@ -21,8 +21,11 @@ export interface ScheduleRoomRow {
   confirmed_hour: number | null;
   // 날짜별 확정 시간 범위. 예: {"5":{"start":12,"end":24},"6":{"start":0,"end":18}}
   confirmed_slots: Record<string, ConfirmedSlot> | null;
-  // 확정된 장소 (장소 검색 결과에서 "여기로 확정!" 선택)
-  confirmed_place: { name: string; address: string; url: string } | null;
+  // 확정된 장소 목록 (누른 순서대로 쌓임. 예전 데이터는 단일 객체일 수 있음)
+  confirmed_place:
+    | { name: string; address: string; url: string }[]
+    | { name: string; address: string; url: string }
+    | null;
   created_at: string;
 }
 

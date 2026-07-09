@@ -8,7 +8,7 @@ import {
   confirmedDays,
   buildConfirmedSegments,
   segmentText,
-  parseConfirmedPlace,
+  parseConfirmedPlaces,
 } from "@/lib/schedule/confirm";
 import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
@@ -23,7 +23,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const slotMap = parseConfirmedSlots(room);
   const days = confirmedDays(slotMap);
   const firstDay = days.length > 0 ? days[0] : null;
-  const place = parseConfirmedPlace(room);
+  const places = parseConfirmedPlaces(room);
 
   // D-데이는 보는 사람 컴퓨터의 오늘 날짜 기준, 첫 확정일까지
   useEffect(() => {
@@ -63,7 +63,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           : `D+${Math.abs(dday)}`;
 
   const handleShare = async () => {
-    const placeLine = place ? `\n📍 ${place.name}` : "";
+    const placeLine = places.map((pl) => `\n📍 ${pl.name}`).join("");
     const message = `🎉 "${room.title}" 약속 확정!\n📅 ${lines.join("\n📅 ")}${placeLine}\n👉 ${window.location.href}`;
 
     const isTouchDevice = navigator.maxTouchPoints > 0;
@@ -132,28 +132,32 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
               </p>
             ))}
           </div>
-          {place && (
-            <p className="text-sm font-bold text-cyan-100">
-              📍{" "}
-              {place.url ? (
-                <a
-                  href={place.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="underline underline-offset-2 hover:text-white"
-                >
-                  {place.name}
-                </a>
-              ) : (
-                place.name
-              )}
-              {place.address && (
-                <span className="text-xs font-normal text-indigo-100">
-                  {" "}
-                  · {place.address}
-                </span>
-              )}
-            </p>
+          {places.length > 0 && (
+            <div className="flex flex-col gap-0.5">
+              {places.map((pl, i) => (
+                <p key={pl.name} className="text-sm font-bold text-cyan-100">
+                  📍 {places.length > 1 ? `${i + 1}. ` : ""}
+                  {pl.url ? (
+                    <a
+                      href={pl.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="underline underline-offset-2 hover:text-white"
+                    >
+                      {pl.name}
+                    </a>
+                  ) : (
+                    pl.name
+                  )}
+                  {pl.address && (
+                    <span className="text-xs font-normal text-indigo-100">
+                      {" "}
+                      · {pl.address}
+                    </span>
+                  )}
+                </p>
+              ))}
+            </div>
           )}
           <button
             type="button"

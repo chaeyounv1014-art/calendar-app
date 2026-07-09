@@ -97,16 +97,21 @@ export interface ConfirmedPlace {
   url: string;
 }
 
-export function parseConfirmedPlace(
-  room: ScheduleRoomRow
-): ConfirmedPlace | null {
+// 확정 장소 목록 (누른 순서 유지). 예전 단일 객체 데이터도 배열로 변환.
+export function parseConfirmedPlaces(room: ScheduleRoomRow): ConfirmedPlace[] {
   const raw = room.confirmed_place;
-  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return null;
-  const name = typeof raw.name === "string" ? raw.name.trim() : "";
-  if (!name) return null;
-  return {
-    name,
-    address: typeof raw.address === "string" ? raw.address : "",
-    url: typeof raw.url === "string" ? raw.url : "",
-  };
+  const list = Array.isArray(raw) ? raw : raw ? [raw] : [];
+
+  const places: ConfirmedPlace[] = [];
+  for (const item of list) {
+    if (!item || typeof item !== "object") continue;
+    const name = typeof item.name === "string" ? item.name.trim() : "";
+    if (!name) continue;
+    places.push({
+      name,
+      address: typeof item.address === "string" ? item.address : "",
+      url: typeof item.url === "string" ? item.url : "",
+    });
+  }
+  return places;
 }
