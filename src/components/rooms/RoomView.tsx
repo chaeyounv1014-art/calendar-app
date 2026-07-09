@@ -139,6 +139,14 @@ export default function RoomView({
             여행처럼 여러 날이면 날짜를 이어서 눌러 함께 선택할 수 있어요.
           </p>
         </div>
+        {entries.length > 0 &&
+          !Object.values(merged.days).some((d) => d.included) && (
+            <p className="rounded-xl border border-dashed border-amber-300 bg-amber-50 px-4 py-3 text-center text-xs font-semibold text-amber-700">
+              😢 아직 모두가 겹치는 날이 없어요...
+              <br />
+              각자 ○/△를 조금만 더 열어보거나, 다음 달에 만나요!
+            </p>
+          )}
         <MergedCalendar
           merged={merged}
           selectedDays={selectedDays}

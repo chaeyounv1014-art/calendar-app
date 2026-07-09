@@ -8,6 +8,8 @@ const TYPE_KEYWORD: Record<string, string> = {
   food: "맛집",
   cafe: "카페",
   play: "놀거리",
+  bakery: "빵집",
+  bar: "술집",
 };
 
 interface KakaoPlaceDocument {

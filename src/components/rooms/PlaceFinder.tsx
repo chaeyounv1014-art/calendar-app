@@ -7,6 +7,8 @@ const CATEGORIES = [
   { key: "food", label: "🍽️ 맛집" },
   { key: "cafe", label: "☕ 카페" },
   { key: "play", label: "🎪 놀거리" },
+  { key: "bakery", label: "🥐 빵집" },
+  { key: "bar", label: "🍺 술집" },
 ] as const;
 
 type CategoryKey = (typeof CATEGORIES)[number]["key"];
@@ -41,6 +43,8 @@ const DEFAULT_EMOJI: Record<CategoryKey, string> = {
   food: "🍽️",
   cafe: "☕",
   play: "🎪",
+  bakery: "🥐",
+  bar: "🍺",
 };
 
 function placeEmoji(categoryText: string, fallback: CategoryKey): string {

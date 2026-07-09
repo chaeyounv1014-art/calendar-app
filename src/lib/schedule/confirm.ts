@@ -44,7 +44,9 @@ export function confirmedDays(map: ConfirmedSlotMap): number[] {
     .sort((a, b) => a - b);
 }
 
-// 연속 구간: 앞 날이 밤 12시(24)까지이고 다음 날이 0시부터면 하나로 이어진다
+// 이어진 날짜들은 하나의 여행 구간으로 묶는다.
+// 시작 = 첫날 확정 시각, 끝 = 마지막 날 확정 시각.
+// 예: 5일 12시 + 6일 12시 확정 -> "5일 낮 12시 ~ 6일 낮 12시" (1박 2일)
 export interface ConfirmedSegment {
   startDay: number;
   startHour: number;
@@ -59,12 +61,7 @@ export function buildConfirmedSegments(
   for (const day of confirmedDays(map)) {
     const slot = map[String(day)];
     const last = segments[segments.length - 1];
-    if (
-      last &&
-      day === last.endDay + 1 &&
-      last.endHour === 24 &&
-      slot.start === 0
-    ) {
+    if (last && day === last.endDay + 1) {
       last.endDay = day;
       last.endHour = slot.end;
     } else {
