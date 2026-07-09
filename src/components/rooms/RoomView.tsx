@@ -15,6 +15,7 @@ import ParticipantList from "./ParticipantList";
 import StatusLegend from "./StatusLegend";
 import TimeVotePanel from "./TimeVotePanel";
 import PlaceFinder from "./PlaceFinder";
+import ConfirmedBanner from "./ConfirmedBanner";
 
 export default function RoomView({
   room,
@@ -184,7 +185,13 @@ export default function RoomView({
             votes={timeVotes.filter((v) => validDays.includes(v.day))}
             onClose={() => setSelectedDays([])}
           />
-          <PlaceFinder roomId={room.id} />
+          <div className="relative">
+            <PlaceFinder roomId={room.id} />
+            {/* "어디서 볼까?" 오른쪽 여백에 두는 작은 확정 카드 (넓은 화면 전용) */}
+            <div className="absolute left-full top-0 ml-4 hidden w-52 xl:block">
+              <ConfirmedBanner room={room} compact />
+            </div>
+          </div>
         </div>
       )}
     </div>

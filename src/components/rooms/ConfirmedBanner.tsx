@@ -15,7 +15,13 @@ import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 
-export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
+export default function ConfirmedBanner({
+  room,
+  compact = false,
+}: {
+  room: ScheduleRoomRow;
+  compact?: boolean;
+}) {
   const router = useRouter();
   const [dday, setDday] = useState<number | null>(null);
   const [canceling, setCanceling] = useState(false);
@@ -63,6 +69,35 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
         : dday > 0
           ? `D-${dday}`
           : `D+${Math.abs(dday)}`;
+
+  // 작은 버전: "어디서 볼까?" 오른쪽에 두는 요약 카드 (버튼 없음)
+  if (compact) {
+    return (
+      <aside className="flex flex-col gap-1.5 rounded-2xl bg-gradient-to-br from-indigo-600 to-cyan-500 p-4 text-white shadow-lg shadow-indigo-300/50">
+        <div className="flex items-center justify-between gap-2">
+          <span className="text-[10px] font-bold tracking-widest text-indigo-100">
+            🎉 약속 확정!
+          </span>
+          {ddayLabel && (
+            <span className="rounded-full bg-white/25 px-2 py-0.5 text-[11px] font-black">
+              {ddayLabel}
+            </span>
+          )}
+        </div>
+        {lines.map((line) => (
+          <p key={line} className="text-sm font-black leading-tight">
+            {line}
+          </p>
+        ))}
+        {places.map((pl, i) => (
+          <p key={pl.name} className="text-[11px] font-semibold text-cyan-100">
+            {places.length > 1 ? `${i + 1}. ` : ""}
+            {pl.name}
+          </p>
+        ))}
+      </aside>
+    );
+  }
 
   const handleShare = async () => {
     const placeLine = places.map((pl) => `\n📍 ${pl.name}`).join("");
