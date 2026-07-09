@@ -257,8 +257,11 @@ function DayTimeSection({
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-3">
         <p className="text-xs font-bold text-slate-700">
-          🖐️ {day}일에 {participantName}님이 가능한 시간 — 시계를 꾹 누른 채
-          시계 방향으로 쭉 드래그하세요
+          🖐️ {day}일에{" "}
+          <span className="rounded-md bg-indigo-600 px-1.5 py-0.5 text-white">
+            {participantName}
+          </span>
+          님이 가능한 시간 — 시계를 꾹 누른 채 시계 방향으로 쭉 드래그하세요
         </p>
         <p className="text-[11px] text-slate-500">
           이 날 되는 사람: {dayParticipants.join(", ")}
