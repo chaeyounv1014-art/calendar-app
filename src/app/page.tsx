@@ -64,10 +64,8 @@ export default async function HomePage() {
             <br />
             겹치는 날짜를 캘린더로 한눈에 보여드려요.
           </p>
-          <p className="animate-fade-in-up text-balance rounded-2xl border border-indigo-200 bg-indigo-50 px-5 py-3 text-lg font-black leading-snug text-indigo-700">
-            팀별로 방을 만들어서
-            <br />
-            다음 주 회식 일정을 잡아보세요!
+          <p className="animate-fade-in-up text-balance text-lg font-black leading-snug text-indigo-700">
+            팀별로 방을 만들어서 다음 주 회식 일정을 잡아보세요!
           </p>
         </header>
 
