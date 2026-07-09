@@ -176,8 +176,15 @@ alter table public.schedule_rooms
   add column if not exists confirmed_hour integer
     check (confirmed_hour between 0 and 23);
 
-comment on column public.schedule_rooms.confirmed_day is '확정된 날짜(일). null이면 아직 조율 중';
-comment on column public.schedule_rooms.confirmed_hour is '확정된 만남 시각(0~23시)';
+comment on column public.schedule_rooms.confirmed_day is '확정된 날짜(일). null이면 아직 조율 중 (구버전 호환용)';
+comment on column public.schedule_rooms.confirmed_hour is '확정된 만남 시각(0~23시) (구버전 호환용)';
+
+-- 날짜별 확정 시간 범위 (여행 등 여러 날 확정 가능)
+-- 예: {"5":{"start":12,"end":24},"6":{"start":0,"end":18}}
+alter table public.schedule_rooms
+  add column if not exists confirmed_slots jsonb not null default '{}'::jsonb;
+
+comment on column public.schedule_rooms.confirmed_slots is '일자별 확정 시간 범위 {"일":{"start":시,"end":시}}';
 
 -- 확정/취소를 위해 방 수정 허용
 drop policy if exists "Allow anonymous update rooms" on public.schedule_rooms;

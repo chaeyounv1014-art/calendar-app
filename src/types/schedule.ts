@@ -5,14 +5,22 @@ export type DayState = "full" | "half" | "unavailable";
 // 일(day) 숫자를 문자열 키로 사용: {"1": "full", "15": "half"}
 export type DayStateMap = Record<string, DayState>;
 
+// 확정된 하루의 시간 범위 (start === end 면 "그 시각에 만남")
+export interface ConfirmedSlot {
+  start: number; // 0~23
+  end: number; // start~24
+}
+
 export interface ScheduleRoomRow {
   id: string;
   title: string;
   target_year: number;
   target_month: number;
-  // 약속 확정 정보 (확정 전에는 null)
+  // 예전 단일 확정 (하위 호환용, confirmed_slots가 비어 있을 때만 사용)
   confirmed_day: number | null;
   confirmed_hour: number | null;
+  // 날짜별 확정 시간 범위. 예: {"5":{"start":12,"end":24},"6":{"start":0,"end":18}}
+  confirmed_slots: Record<string, ConfirmedSlot> | null;
   created_at: string;
 }
 

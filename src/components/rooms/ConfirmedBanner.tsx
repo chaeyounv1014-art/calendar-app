@@ -3,7 +3,12 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { ScheduleRoomRow } from "@/types/schedule";
-import { formatHour } from "@/lib/schedule/timeSlots";
+import {
+  parseConfirmedSlots,
+  confirmedDays,
+  buildConfirmedSegments,
+  segmentText,
+} from "@/lib/schedule/confirm";
 import { supabase, ROOMS_TABLE } from "@/lib/supabase";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -14,21 +19,37 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const [canceling, setCanceling] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const day = room.confirmed_day;
+  const slotMap = parseConfirmedSlots(room);
+  const days = confirmedDays(slotMap);
+  const firstDay = days.length > 0 ? days[0] : null;
 
-  // D-데이는 보는 사람 컴퓨터의 오늘 날짜 기준으로 계산
+  // D-데이는 보는 사람 컴퓨터의 오늘 날짜 기준, 첫 확정일까지
   useEffect(() => {
-    if (day == null) return;
+    if (firstDay === null) return;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const target = new Date(room.target_year, room.target_month - 1, day);
+    const target = new Date(
+      room.target_year,
+      room.target_month - 1,
+      firstDay
+    );
     setDday(Math.round((target.getTime() - today.getTime()) / 86400000));
-  }, [room.target_year, room.target_month, day]);
+  }, [room.target_year, room.target_month, firstDay]);
 
-  if (day == null) return null;
+  if (firstDay === null) return null;
 
+  const segments = buildConfirmedSegments(slotMap);
+  const summary = segments.map(segmentText).join(", ");
   const weekday =
-    WEEKDAYS[new Date(room.target_year, room.target_month - 1, day).getDay()];
+    WEEKDAYS[
+      new Date(room.target_year, room.target_month - 1, firstDay).getDay()
+    ];
+
+  // 하루짜리 확정이면 요일도 같이, 여러 날이면 구간 그대로
+  const titleText =
+    days.length === 1
+      ? `${room.target_month}월 ${summary.replace(`${firstDay}일`, `${firstDay}일 (${weekday})`)}`
+      : `${room.target_month}월 ${summary}`;
 
   const ddayLabel =
     dday === null
@@ -40,9 +61,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           : `D+${Math.abs(dday)}`;
 
   const handleShare = async () => {
-    const timeText =
-      room.confirmed_hour != null ? ` ${formatHour(room.confirmed_hour)}` : "";
-    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${room.target_month}월 ${day}일 (${weekday})${timeText}\n👉 ${window.location.href}`;
+    const message = `🎉 "${room.title}" 약속 확정!\n📅 ${titleText}\n👉 ${window.location.href}`;
 
     const isTouchDevice = navigator.maxTouchPoints > 0;
     if (isTouchDevice && navigator.share) {
@@ -66,14 +85,18 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   const handleCancel = async () => {
     if (canceling) return;
     const ok = window.confirm(
-      "약속 확정을 취소할까요?\n확정 카드가 사라지고 다시 조율 상태로 돌아가요."
+      "약속 확정을 모두 취소할까요?\n확정 카드가 사라지고 다시 조율 상태로 돌아가요."
     );
     if (!ok) return;
 
     setCanceling(true);
     const { data, error } = await supabase
       .from(ROOMS_TABLE)
-      .update({ confirmed_day: null, confirmed_hour: null })
+      .update({
+        confirmed_slots: {},
+        confirmed_day: null,
+        confirmed_hour: null,
+      })
       .eq("id", room.id)
       .select();
 
@@ -98,15 +121,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
           <span className="text-xs font-bold tracking-widest text-indigo-100">
             🎉 약속 확정!
           </span>
-          <p className="text-2xl font-black leading-tight">
-            {room.target_month}월 {day}일 ({weekday})
-            {room.confirmed_hour != null && (
-              <span className="text-cyan-100">
-                {" "}
-                {formatHour(room.confirmed_hour)}
-              </span>
-            )}
-          </p>
+          <p className="text-2xl font-black leading-tight">{titleText}</p>
           <button
             type="button"
             onClick={handleShare}

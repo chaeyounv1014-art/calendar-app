@@ -124,7 +124,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
           </div>
         </header>
 
-        {room.confirmed_day != null && <ConfirmedBanner room={room} />}
+        <ConfirmedBanner room={room} />
 
         <RoomView
           room={room}

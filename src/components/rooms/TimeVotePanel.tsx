@@ -11,6 +11,7 @@ import {
   formatHour,
 } from "@/lib/schedule/timeSlots";
 import { supabase, TIME_VOTES_TABLE, ROOMS_TABLE } from "@/lib/supabase";
+import { segmentText } from "@/lib/schedule/confirm";
 import { ClockDialInput, ClockDialResult } from "./ClockDial";
 
 // 연속된 날짜는 "5~6일"처럼 묶어서 표시 (여행 등 여러 날 약속용)
@@ -110,7 +111,6 @@ export default function TimeVotePanel({
         participantName={participantName}
         dayParticipants={participantsByDay[currentDay] ?? []}
         votes={votes.filter((v) => v.day === currentDay)}
-        onConfirmed={onClose}
       />
     </section>
   );
@@ -124,7 +124,6 @@ function DayTimeSection({
   participantName,
   dayParticipants,
   votes,
-  onConfirmed,
 }: {
   roomId: string;
   month: number;
@@ -132,7 +131,6 @@ function DayTimeSection({
   participantName: string;
   dayParticipants: string[];
   votes: TimeVoteRow[];
-  onConfirmed: () => void;
 }) {
   const router = useRouter();
 
@@ -149,10 +147,19 @@ function DayTimeSection({
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [confirmHour, setConfirmHour] = useState<number>(() => {
+  const [confirmStart, setConfirmStart] = useState<number>(() => {
     const hours = allAvailableHours(displayVotes, dayParticipants);
     return hours.length > 0 ? hours[0] : 12;
   });
+  const [confirmEnd, setConfirmEnd] = useState<number>(() => {
+    const hours = allAvailableHours(displayVotes, dayParticipants);
+    return hours.length > 0 ? hours[0] : 12;
+  });
+
+  const handleStartChange = (value: number) => {
+    setConfirmStart(value);
+    setConfirmEnd((prev) => (prev < value ? value : prev));
+  };
 
   const handleHoursChange = (hours: number[]) => {
     setSaved(false);
@@ -188,15 +195,49 @@ function DayTimeSection({
 
   const handleConfirm = async () => {
     if (confirming) return;
-    const ok = window.confirm(
-      `${month}월 ${day}일 ${formatHour(confirmHour)} 약속으로 확정할까요?`
-    );
+    const rangeText = segmentText({
+      startDay: day,
+      startHour: confirmStart,
+      endDay: day,
+      endHour: confirmEnd,
+    });
+    const ok = window.confirm(`${month}월 ${rangeText} 약속으로 확정할까요?`);
     if (!ok) return;
 
     setConfirming(true);
+
+    // 기존 확정을 불러와 이 날짜를 추가/갱신 (여러 날 확정 가능)
+    const { data: roomRow, error: fetchError } = await supabase
+      .from(ROOMS_TABLE)
+      .select("confirmed_slots")
+      .eq("id", roomId)
+      .maybeSingle();
+
+    if (fetchError) {
+      console.error("[room] failed to load confirm state:", fetchError.message);
+      window.alert("확정에 실패했어요. 잠시 후 다시 시도해주세요.");
+      setConfirming(false);
+      return;
+    }
+
+    const rawSlots = roomRow?.confirmed_slots;
+    const currentSlots =
+      rawSlots && typeof rawSlots === "object" && !Array.isArray(rawSlots)
+        ? (rawSlots as Record<string, { start: number; end: number }>)
+        : {};
+    const nextSlots = {
+      ...currentSlots,
+      [String(day)]: { start: confirmStart, end: confirmEnd },
+    };
+    const firstDay = Math.min(...Object.keys(nextSlots).map(Number));
+
     const { data, error } = await supabase
       .from(ROOMS_TABLE)
-      .update({ confirmed_day: day, confirmed_hour: confirmHour })
+      .update({
+        confirmed_slots: nextSlots,
+        confirmed_day: firstDay,
+        confirmed_hour: nextSlots[String(firstDay)].start,
+      })
       .eq("id", roomId)
       .select();
 
@@ -206,14 +247,13 @@ function DayTimeSection({
         error?.message ?? "no rows updated (RLS update policy missing?)"
       );
       window.alert(
-        "확정에 실패했어요. Supabase에 update 정책이 실행되어 있는지 확인해주세요."
+        "확정에 실패했어요. Supabase에 confirmed_slots 컬럼과 update 정책이 있는지 확인해주세요."
       );
       setConfirming(false);
       return;
     }
 
     setConfirming(false);
-    onConfirmed();
     router.refresh();
   };
 
@@ -322,10 +362,10 @@ function DayTimeSection({
         <p className="text-xs font-bold text-slate-700">
           📌 {day}일로 약속 확정하기
         </p>
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
           <select
-            value={confirmHour}
-            onChange={(e) => setConfirmHour(Number(e.target.value))}
+            value={confirmStart}
+            onChange={(e) => handleStartChange(Number(e.target.value))}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
           >
             {Array.from({ length: 24 }, (_, h) => (
@@ -334,17 +374,41 @@ function DayTimeSection({
               </option>
             ))}
           </select>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            disabled={confirming}
-            className="inline-flex shrink-0 items-center justify-center rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 px-5 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+          <span className="shrink-0 text-xs font-bold text-slate-400">
+            부터
+          </span>
+          <select
+            value={confirmEnd}
+            onChange={(e) => setConfirmEnd(Number(e.target.value))}
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
           >
-            {confirming ? "확정 중..." : "🎉 확정!"}
-          </button>
+            {Array.from(
+              { length: 25 - confirmStart },
+              (_, i) => confirmStart + i
+            ).map((h) => (
+              <option key={h} value={h}>
+                {h === confirmStart
+                  ? `${formatHour(h)} (그 시각에 만남)`
+                  : formatHour(h)}
+              </option>
+            ))}
+          </select>
+          <span className="shrink-0 text-xs font-bold text-slate-400">
+            까지
+          </span>
         </div>
+        <button
+          type="button"
+          onClick={handleConfirm}
+          disabled={confirming}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-cyan-500 px-6 py-2.5 text-sm font-bold text-white shadow-md shadow-indigo-200 transition-all duration-200 hover:scale-[1.02] active:scale-95 disabled:pointer-events-none disabled:opacity-50"
+        >
+          {confirming ? "확정 중..." : `🎉 ${day}일 확정!`}
+        </button>
         <p className="text-[11px] text-slate-400">
-          확정하면 방 맨 위에 확정 카드와 D-데이가 표시돼요.
+          여행이면 첫날은 밤 12시까지, 다음 날 탭에서 밤 12시부터 이어서
+          확정해보세요 — 확정 카드에 &quot;5일 낮 12시 ~ 6일 오후
+          6시&quot;처럼 하나로 묶여 나와요.
         </p>
       </div>
     </div>
