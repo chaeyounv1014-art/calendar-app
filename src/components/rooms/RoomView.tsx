@@ -112,11 +112,13 @@ export default function RoomView({
           <p className="text-xs text-slate-500">
             <span className="font-bold text-emerald-600">초록</span>은 전원
             종일 가능, <span className="font-bold text-amber-600">노랑</span>은
-            일부 시간 가능인 사람이 섞여 있는 날이에요. 한 명이라도 ✕이거나
-            아직 입력하지 않은 날은 표시되지 않아요.{" "}
-            <strong className="font-bold text-indigo-600">
-              색칠된 칸을 누르면 그 날 몇 시에 볼지도 정할 수 있어요!
-            </strong>
+            일부 시간 가능인 사람이 섞여 있는 날이에요.
+          </p>
+          <p className="text-xs text-slate-500">
+            한 명이라도 ✕이거나 아직 입력하지 않은 날은 표시되지 않아요.
+          </p>
+          <p className="text-sm font-bold text-indigo-600">
+            색칠된 칸을 눌러 약속 시간을 정하세요!
           </p>
         </div>
         <MergedCalendar
