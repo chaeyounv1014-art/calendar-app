@@ -132,7 +132,7 @@ export default function RoomView({
             <span className="font-bold text-indigo-600">입력하지 않은 날</span>
             은 표시되지 않아요.
           </p>
-          <p className="text-sm font-bold text-indigo-600">
+          <p className="mt-1.5 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-1.5 text-center text-sm font-bold text-indigo-600">
             색칠된 칸을 눌러 약속 시간을 정하세요!
           </p>
           <p className="text-xs text-slate-500">
