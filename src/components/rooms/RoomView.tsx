@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type {
   MergedMonthResult,
   ScheduleEntryRow,
@@ -30,6 +30,7 @@ export default function RoomView({
   const [name, setName] = useState<string | null>(null);
   const [ready, setReady] = useState(false);
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
+  const panelRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setName(getStoredName(room.id));
@@ -57,11 +58,29 @@ export default function RoomView({
 
   // 같은 날짜를 다시 누르면 해제, 다른 날짜를 누르면 함께 선택 (여행용)
   const handleSelectDay = (day: number) => {
+    // 첫 선택(패널이 처음 뜨는 순간)에만 아래 시간 정하기로 부드럽게 이동.
+    // 이후 날짜를 더 누를 땐 화면이 안 움직여 다중 선택을 방해하지 않는다.
+    const willOpenPanel =
+      validDays.length === 0 &&
+      !selectedDays.includes(day) &&
+      Boolean(merged.days[day]?.included);
+
     setSelectedDays((prev) =>
       prev.includes(day)
         ? prev.filter((d) => d !== day)
         : [...prev, day].sort((a, b) => a - b)
     );
+
+    if (willOpenPanel) {
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() =>
+          panelRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          })
+        )
+      );
+    }
   };
 
   const validDays = selectedDays.filter((d) => merged.days[d]?.included);
@@ -155,7 +174,7 @@ export default function RoomView({
       </section>
 
       {validDays.length > 0 && (
-        <>
+        <div ref={panelRef} className="flex scroll-mt-3 flex-col gap-8">
           <TimeVotePanel
             roomId={room.id}
             month={room.target_month}
@@ -166,7 +185,7 @@ export default function RoomView({
             onClose={() => setSelectedDays([])}
           />
           <PlaceFinder roomId={room.id} />
-        </>
+        </div>
       )}
     </div>
   );

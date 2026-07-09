@@ -222,7 +222,7 @@ export default function PlaceFinder({ roomId }: { roomId: string }) {
                       disabled={savingPlaceId !== null}
                       className="shrink-0 rounded-full bg-indigo-600 px-2 py-1 text-[10px] font-bold text-white transition-all duration-150 hover:bg-indigo-500 active:scale-95 disabled:opacity-50"
                     >
-                      여기로 확정!
+                      {savingPlaceId === p.id ? "저장 중..." : "여기로 확정!"}
                     </button>
                   </div>
                   {p.category && (
