@@ -139,6 +139,10 @@ function DayTimeSection({
   );
   const myVote = votes.find((v) => v.participant_name === participantName);
 
+  // 전원이 가능한 시간대 (확정 기본값 계산에 사용)
+  const everyoneHours = allAvailableHours(displayVotes, dayParticipants);
+  const suggestedHour = everyoneHours.length > 0 ? everyoneHours[0] : null;
+
   const [myHours, setMyHours] = useState<number[]>(
     parseHourSlots(myVote?.slots)
   );
@@ -146,10 +150,15 @@ function DayTimeSection({
   const [saved, setSaved] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [confirmHour, setConfirmHour] = useState<number>(() => {
-    const hours = allAvailableHours(displayVotes, dayParticipants);
-    return hours.length > 0 ? hours[0] : 12;
-  });
+  const [confirmHour, setConfirmHour] = useState<number>(suggestedHour ?? 12);
+  const [confirmTouched, setConfirmTouched] = useState(false);
+
+  // 사용자가 직접 바꾸기 전까지는, 전원 가능 시작 시각을 확정 기본값으로 따라감
+  // (투표가 늘어나 전원 가능 구간이 생기면 자동 반영)
+  useEffect(() => {
+    if (confirmTouched || suggestedHour === null) return;
+    setConfirmHour(suggestedHour);
+  }, [suggestedHour, confirmTouched]);
 
   const handleHoursChange = (hours: number[]) => {
     setSaved(false);
@@ -244,7 +253,6 @@ function DayTimeSection({
   };
 
   const counts = buildHourCounts(displayVotes);
-  const everyoneHours = allAvailableHours(displayVotes, dayParticipants);
   const votedNames = new Set(
     displayVotes
       .filter((v) => parseHourSlots(v.slots).length > 0)
@@ -354,7 +362,10 @@ function DayTimeSection({
         <div className="flex gap-2">
           <select
             value={confirmHour}
-            onChange={(e) => setConfirmHour(Number(e.target.value))}
+            onChange={(e) => {
+              setConfirmHour(Number(e.target.value));
+              setConfirmTouched(true);
+            }}
             className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-700 outline-none transition-colors focus:border-cyan-400 focus:bg-white"
           >
             {Array.from({ length: 24 }, (_, h) => (
