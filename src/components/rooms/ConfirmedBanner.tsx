@@ -148,7 +148,7 @@ export default function ConfirmedBanner({ room }: { room: ScheduleRoomRow }) {
   };
 
   return (
-    <section className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 p-5 text-white shadow-xl shadow-indigo-300/60">
+    <section className="sticky top-3 z-30 overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 p-5 text-white shadow-xl shadow-indigo-300/60">
       <div className="flex items-start justify-between gap-3">
         <div className="flex flex-col gap-1.5">
           <span className="text-xs font-bold tracking-widest text-indigo-100">
